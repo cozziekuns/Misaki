@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Placement EV Calculator</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/bamboo.css">
 </head>
 <body>
   <h2>Placement EV</h2>
@@ -15,32 +15,36 @@
   <h4>Outcome Matrix</h4>
 
   <table>
-    <tr>
-      <th>Seat</th>
-      <th>1st Rate</th>
-      <th>2nd Rate</th>
-      <th>3rd Rate</th>
-      <th>4th Rate</th>
-    </tr>
-    {% for i in range(0, 4) %}
-    <tr>
-      <td>
-        {% if player_index == i %}
-          <strong>{{ ['East', 'South', 'West', 'North'][i] }}</strong>
-        {% else %}
-          {{ ['East', 'South', 'West', 'North'][i] }}
-        {% endif %}
-      {% for j in range(0, 4) %}
-      <td>
-        {% if player_index == i %}
-          <strong>{{ matrix[i][j] }}</strong>
-        {% else %}
-          {{ matrix[i][j] }}
-        {% endif %}
-      </td>
+    <thead>
+      <tr>
+        <th>Seat</th>
+        <th>1st Rate</th>
+        <th>2nd Rate</th>
+        <th>3rd Rate</th>
+        <th>4th Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in range(0, 4) %}
+      <tr>
+        <td>
+          {% if player_index == i %}
+            <strong>{{ ['East', 'South', 'West', 'North'][i] }}</strong>
+          {% else %}
+            {{ ['East', 'South', 'West', 'North'][i] }}
+          {% endif %}
+        {% for j in range(0, 4) %}
+        <td>
+          {% if player_index == i %}
+            <strong>{{ matrix[i][j] }}</strong>
+          {% else %}
+            {{ matrix[i][j] }}
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
       {% endfor %}
-    </tr>
-    {% endfor %}
+    </tbody>
   </table>
 
   <br>
@@ -49,7 +53,7 @@
   
   <br><br>
   
-  <input type="button" onclick="location.href='/'" value="Back">
+  <input type="button" onclick="location.href='javascript:history.back()'" value="Back">
 
   <br><br>
   <hr>

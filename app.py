@@ -15,12 +15,10 @@ PERMUTATIONS = [
 ]
 
 def calculate_prob_matrix(kyoku, scores):
-    
     model = XGBClassifier()
     model.load_model('./static/models/full.model')
 
     input_vector = [kyoku] + scores
-    print(input_vector)
     probs = model.predict_proba(np.array([input_vector]))[0]
 
     totals = [
