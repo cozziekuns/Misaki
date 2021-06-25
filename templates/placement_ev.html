@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Placement EV Calculator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h2>Placement EV</h2>
+  <h4>Inputs</h4>
+  Round: {{ kyoku }}<br>
+  Current Scores - East ({{ scores[0] }}) | South ({{ scores[1] }}) | West ({{ scores[2] }}) | North ({{ scores[3] }})<br>
+  Payoff Matrix - 1st ({{ payoff[0] }}) | 2nd ({{ payoff[1] }}) | 3rd ({{ payoff[2] }}) | 4th ({{ payoff[3] }})<br>
+
+  <h4>Outcome Matrix</h4>
+
+  <table>
+    <tr>
+      <th>Seat</th>
+      <th>1st Rate</th>
+      <th>2nd Rate</th>
+      <th>3rd Rate</th>
+      <th>4th Rate</th>
+    </tr>
+    {% for i in range(0, 4) %}
+    <tr>
+      <td>
+        {% if player_index == i %}
+          <strong>{{ ['East', 'South', 'West', 'North'][i] }}</strong>
+        {% else %}
+          {{ ['East', 'South', 'West', 'North'][i] }}
+        {% endif %}
+      {% for j in range(0, 4) %}
+      <td>
+        {% if player_index == i %}
+          <strong>{{ matrix[i][j] }}</strong>
+        {% else %}
+          {{ matrix[i][j] }}
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+
+  <br>
+
+  <strong>Player Expected Payoff: {{ ev }} pt</strong>
+  
+  <br><br>
+  
+  <input type="button" onclick="location.href='/'" value="Back">
+
+  <br><br>
+  <hr>
+  * Based off Tenhou Houou room games only. Will not be accurate for other rulesets / playerbases. 
+  <br>
+  * Assumes no homba or riichi sticks on the table.
+</body>
+  <script type="text/javascript" src="placement_ev.js"></script>
+</html>

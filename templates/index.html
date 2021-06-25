@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Placement EV Calculator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h2>Placement EV Calculator</h2>
+  <br>
+
+  <form action="/placement_ev" method="get">
+    <label for="kyoku">Current Round</label>
+    <select name="kyoku" id="kyoku">
+      <option value="0">East 1</option>
+      <option value="1">East 2</option>
+      <option value="2">East 3</option>
+      <option value="3">East 4</option>
+      <option value="4">South 1</option>
+      <option value="5">South 2</option>
+      <option value="6">South 3</option>
+      <option value="7">South 4</option>
+    </select><br>
+    
+    <label for="player_seat">Player Seat</label>
+    <select name="player_seat" id="player_seat">
+      <option value="0">East</option>
+      <option value="1">South</option>
+      <option value="2">West</option>
+      <option value="3">North</option>
+    </select>
+
+    <br><br>
+
+    <label for="east_player_score">East Player Score</label>
+    <input type="number" id="east_player_score" name="east_player_score" value="25000"><br>
+
+    <label for="south_player_score">South Player Score</label>
+    <input type="number" id="south_player_score" name="south_player_score" value="25000"><br>
+
+    <label for="west_player_score">West Player Score</label>
+    <input type="number" id="west_player_score" name="west_player_score" value="25000"><br>
+
+    <label for="north_player_score">North Player Score</label>
+    <input type="number" id="north_player_score" name="north_player_score" value="25000">
+    
+    <br><br>
+
+    <label for="first_place_bonus">First Place Bonus</label>
+    <input type="number" id="first_place_bonus" name="first_place_bonus" value="90"><br>
+
+    <label for="second_place_bonus">Second Place Bonus</label>
+    <input type="number" id="second_place_bonus" name="second_place_bonus" value="45"><br>
+
+    <label for="third_place_bonus">Third Place Bonus</label>
+    <input type="number" id="third_place_bonus" name="third_place_bonus" value="0"><br>
+
+    <label for="fourth_place_bonus">Fourth Place Bonus</label>
+    <input type="number" id="fourth_place_bonus" name="fourth_place_bonus" value="-135">
+
+    <br><br>
+
+    <input type="submit" value="Calculate Placement EV">
+  </form>
+  <br>
+  <hr>
+  * Based off Tenhou Houou room games only. Will not be accurate for other rulesets / playerbases. 
+  <br>
+  * Assumes no homba or riichi sticks on the table.
+</body>
+  <script type="text/javascript" src="placement_ev.js"></script>
+</html>
