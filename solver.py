@@ -2,6 +2,7 @@ from operator import add, mul
 
 import numpy as np
 from xgboost import XGBClassifier
+from game import Game_Agari
 
 PERMUTATIONS = [
     [0, 1, 2, 3], [0, 1, 3, 2], [0, 2, 1, 3], [0, 2, 3, 1], [0, 3, 1, 2], [0, 3, 2, 1],
@@ -99,20 +100,27 @@ wall = 24 + 13
 player_draws = 6
 opp_draws = 6
 
-player_waits = 2
+player_waits = 3
 opp_waits = 2
 
 shoubu_probability_matrix = solve_shoubu_opp_draw(wall, player_draws, opp_draws, player_waits, opp_waits)
 fold_probability_matrix = solve_fold_opp_draw(wall, player_draws, opp_draws, opp_waits)
 
-# kyoku = 0
-
 player_tsumo_result = [210, 340, 230, 220]
 player_ron_result = [250, 340, 250, 160]
-opp_tsumo_result = [210, 220, 230, 340]
-opp_ron_result = [250, 160, 250, 340]
-tenpai_result = [235, 255, 235, 255]
+opp_tsumo_result = [210, 230, 230, 330]
+opp_ron_result = [250, 170, 250, 330]
+tenpai_result = [235, 265, 235, 255]
 noten_result = [240, 240, 240, 260]
+
+"""
+player_tsumo_result = [210, 330, 230, 230]
+player_ron_result = [250, 330, 250, 170]
+opp_tsumo_result = [210, 230, 230, 330]
+opp_ron_result = [250, 170, 250, 330]
+tenpai_result = [235, 265, 235, 265]
+noten_result = [240, 240, 240, 270]
+"""
 
 payoff_matrix = [90, 45, 0, -135]
 result_matrix = [
@@ -124,54 +132,55 @@ result_matrix = [
     noten_result
 ]
 
-tenpai_result = [265, 235, 255, 235]
-noten_result = [240, 240, 270, 240]
-deal_in_result = [170, 250, 330, 250]
+kyoku = 1
 
-tenpai_ev = calc_placement_ev(player_seat=0, kyoku=6, scores=tenpai_result, payoff_matrix=payoff_matrix)
-noten_ev = calc_placement_ev(player_seat=0, kyoku=7, scores=noten_result, payoff_matrix=payoff_matrix)
-deal_in_ev = calc_placement_ev(player_seat=0, kyoku=7, scores=deal_in_result, payoff_matrix=payoff_matrix)
+result_payoff_matrix = [
+    calc_placement_ev(
+        player_seat=1,
+        kyoku=kyoku,
+        scores=result,
+        payoff_matrix=payoff_matrix
+    ) for result in result_matrix
+]
 
-print(f"Tenpai EV {tenpai_ev}")
-print(f"Noten EV {noten_ev}")
-print(f"Deal-in EV {deal_in_ev}")
+# print(shoubu_probability_matrix)
+# print(fold_probability_matrix)
+# print(result_payoff_matrix)
+
+deal_in_prob = 0
+
+shoubu_ev_matrix = list(map(mul, shoubu_probability_matrix, result_payoff_matrix))
+shoubu_ev = sum(shoubu_ev_matrix)
+
+fold_ev_matrix = list(map(mul, fold_probability_matrix, result_payoff_matrix))
+fold_ev = sum(fold_ev_matrix)
+
+deal_in_ev = result_payoff_matrix[2]
+
+print(f"Riichi EV: {deal_in_ev * deal_in_prob + shoubu_ev * (1 - deal_in_prob)}")
+print(f"Shoubu EV: {shoubu_ev}")
+print(f"Deal-in EV: {deal_in_ev}")
+print(f"Fold EV: {fold_ev}")
+
+threshold = (fold_ev - shoubu_ev) / (deal_in_ev - shoubu_ev)
+print(f"Threshold: {threshold}")
+print("")
+
+tenpai_result = [235, 265, 235, 265]
+noten_result = [240, 240, 240, 270]
+deal_in_result = [250, 170, 250, 330]
+
+tenpai_ev = calc_placement_ev(player_seat=1, kyoku=kyoku, scores=tenpai_result, payoff_matrix=payoff_matrix)
+noten_ev = calc_placement_ev(player_seat=1, kyoku=kyoku, scores=noten_result, payoff_matrix=payoff_matrix)
+deal_in_ev = calc_placement_ev(player_seat=1, kyoku=kyoku, scores=deal_in_result, payoff_matrix=payoff_matrix)
+
+print(f"Tenpai EV: {tenpai_ev}")
+print(f"Noten EV: {noten_ev}")
+print(f"Deal-in EV: {deal_in_ev}")
 
 print(f"Threshold: {(noten_ev - tenpai_ev) / (deal_in_ev - tenpai_ev)}")
 
-exit()
+agari = Game_Agari(actor=1, target=2, han=4, fu=30)
+new_scores = agari.apply(0, [250, 250, 250, 250])
 
-for kyoku in range(1, 8):
-    print(kyoku)
-
-    result_payoff_matrix = [
-        calc_placement_ev(
-            player_seat=1,
-            kyoku=kyoku,
-            scores=result,
-            payoff_matrix=payoff_matrix
-        ) for result in result_matrix
-    ]
-
-    # print(shoubu_probability_matrix)
-    # print(fold_probability_matrix)
-    # print(result_payoff_matrix)
-
-    deal_in_prob = 0
-
-    shoubu_ev_matrix = list(map(mul, shoubu_probability_matrix, result_payoff_matrix))
-    shoubu_ev_matrix = [x * (1 - deal_in_prob) for x in shoubu_ev_matrix]
-    shoubu_ev = sum(shoubu_ev_matrix)
-
-    fold_ev_matrix = list(map(mul, fold_probability_matrix, result_payoff_matrix))
-    fold_ev = sum(fold_ev_matrix)
-
-    deal_in_ev = result_payoff_matrix[2]
-
-    print(deal_in_ev * deal_in_prob + shoubu_ev * (1 - deal_in_prob))
-    print(fold_ev)
-
-    print(shoubu_ev_matrix)
-    print(fold_ev_matrix)
-
-    threshold = (fold_ev - shoubu_ev) / (deal_in_ev - shoubu_ev)
-    print(threshold)
+print(new_scores)
