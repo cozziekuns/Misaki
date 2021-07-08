@@ -124,6 +124,22 @@ result_matrix = [
     noten_result
 ]
 
+tenpai_result = [265, 235, 255, 235]
+noten_result = [240, 240, 270, 240]
+deal_in_result = [170, 250, 330, 250]
+
+tenpai_ev = calc_placement_ev(player_seat=0, kyoku=6, scores=tenpai_result, payoff_matrix=payoff_matrix)
+noten_ev = calc_placement_ev(player_seat=0, kyoku=7, scores=noten_result, payoff_matrix=payoff_matrix)
+deal_in_ev = calc_placement_ev(player_seat=0, kyoku=7, scores=deal_in_result, payoff_matrix=payoff_matrix)
+
+print(f"Tenpai EV {tenpai_ev}")
+print(f"Noten EV {noten_ev}")
+print(f"Deal-in EV {deal_in_ev}")
+
+print(f"Threshold: {(noten_ev - tenpai_ev) / (deal_in_ev - tenpai_ev)}")
+
+exit()
+
 for kyoku in range(1, 8):
     print(kyoku)
 
@@ -153,6 +169,9 @@ for kyoku in range(1, 8):
 
     print(deal_in_ev * deal_in_prob + shoubu_ev * (1 - deal_in_prob))
     print(fold_ev)
+
+    print(shoubu_ev_matrix)
+    print(fold_ev_matrix)
 
     threshold = (fold_ev - shoubu_ev) / (deal_in_ev - shoubu_ev)
     print(threshold)
