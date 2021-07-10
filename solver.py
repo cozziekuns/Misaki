@@ -11,6 +11,23 @@ PERMUTATIONS = [
     [3, 0, 1, 2], [3, 0, 2, 1], [3, 1, 0, 2], [3, 1, 2, 0], [3, 2, 0, 1], [3, 2, 1, 0],
 ]
 
+def calc_tenpai_result(scores, tenpai_matrix):
+    result = scores[:]
+    players_tenpai = sum(tenpai_matrix)
+
+    if players_tenpai % 4 == 0:
+        return result
+
+    for i in range(0, 4):
+        if players_tenpai == 3:
+            result[i] += (10 if tenpai_matrix[i] == 1 else -30)
+        elif players_tenpai == 2:
+            result[i] += (15 if tenpai_matrix[i] == 1 else -15)
+        else:
+            result[i] += (30 if tenpai_matrix[i] == 1 else -10)
+
+    return result
+
 def calc_placement_ev(player_seat, kyoku, scores, payoff_matrix):
     prob_matrix = calc_prob_matrix(kyoku, scores)
 
@@ -100,27 +117,32 @@ wall = 24 + 13
 player_draws = 6
 opp_draws = 6
 
-player_waits = 3
+player_waits = 2
 opp_waits = 2
 
 shoubu_probability_matrix = solve_shoubu_opp_draw(wall, player_draws, opp_draws, player_waits, opp_waits)
 fold_probability_matrix = solve_fold_opp_draw(wall, player_draws, opp_draws, opp_waits)
 
-player_tsumo_result = [210, 340, 230, 220]
-player_ron_result = [250, 340, 250, 160]
-opp_tsumo_result = [210, 230, 230, 330]
-opp_ron_result = [250, 170, 250, 330]
-tenpai_result = [235, 265, 235, 255]
-noten_result = [240, 240, 240, 260]
+kyoku = 2
+curr_scores = [250, 250, 250, 250]
 
-"""
-player_tsumo_result = [210, 330, 230, 230]
-player_ron_result = [250, 330, 250, 170]
-opp_tsumo_result = [210, 230, 230, 330]
-opp_ron_result = [250, 170, 250, 330]
-tenpai_result = [235, 265, 235, 265]
-noten_result = [240, 240, 240, 270]
-"""
+player_seat = 2
+opp_seat = 3
+
+tenpai_seats = [0, 0, 0, 0]
+tenpai_seats[player_seat] = 1
+tenpai_seats[opp_seat] = 1
+
+noten_seats = [0, 0, 0, 0]
+noten_seats[opp_seat] = 1
+
+player_tsumo_result = Game_Agari(actor=player_seat, target=player_seat, han=4, fu=40).apply(kyoku, curr_scores)
+player_ron_result = Game_Agari(actor=player_seat, target=opp_seat, han=4, fu=40).apply(kyoku, curr_scores)
+opp_tsumo_result = Game_Agari(actor=opp_seat, target=opp_seat, han=4, fu=40).apply(kyoku, curr_scores)
+opp_ron_result = Game_Agari(actor=opp_seat, target=player_seat, han=4, fu=40).apply(kyoku, curr_scores)
+
+tenpai_result = calc_tenpai_result(curr_scores, tenpai_seats)
+noten_result = calc_tenpai_result(curr_scores, noten_seats)
 
 payoff_matrix = [90, 45, 0, -135]
 result_matrix = [
@@ -132,16 +154,28 @@ result_matrix = [
     noten_result
 ]
 
-kyoku = 1
+print(result_matrix)
 
-result_payoff_matrix = [
-    calc_placement_ev(
-        player_seat=1,
-        kyoku=kyoku,
-        scores=result,
-        payoff_matrix=payoff_matrix
-    ) for result in result_matrix
-]
+result_payoff_matrix = []
+
+for i in range(0, len(result_matrix)):
+    if i in [0, 1, 4] and player_seat == kyoku % 4:
+        next_kyoku = kyoku
+    elif i in [2, 3, 4] and opp_seat == kyoku % 4:
+        next_kyoku = kyoku
+    else:
+        next_kyoku = kyoku + 1
+
+    result_payoff_matrix.append(
+        calc_placement_ev(
+            player_seat=player_seat,
+            kyoku=next_kyoku,
+            scores=result_matrix[i],
+            payoff_matrix=payoff_matrix,
+        ) 
+    )
+
+print(result_payoff_matrix)
 
 # print(shoubu_probability_matrix)
 # print(fold_probability_matrix)
@@ -157,7 +191,7 @@ fold_ev = sum(fold_ev_matrix)
 
 deal_in_ev = result_payoff_matrix[2]
 
-print(f"Riichi EV: {deal_in_ev * deal_in_prob + shoubu_ev * (1 - deal_in_prob)}")
+print(f"Push EV: {deal_in_ev * deal_in_prob + shoubu_ev * (1 - deal_in_prob)}")
 print(f"Shoubu EV: {shoubu_ev}")
 print(f"Deal-in EV: {deal_in_ev}")
 print(f"Fold EV: {fold_ev}")
@@ -165,22 +199,3 @@ print(f"Fold EV: {fold_ev}")
 threshold = (fold_ev - shoubu_ev) / (deal_in_ev - shoubu_ev)
 print(f"Threshold: {threshold}")
 print("")
-
-tenpai_result = [235, 265, 235, 265]
-noten_result = [240, 240, 240, 270]
-deal_in_result = [250, 170, 250, 330]
-
-tenpai_ev = calc_placement_ev(player_seat=1, kyoku=kyoku, scores=tenpai_result, payoff_matrix=payoff_matrix)
-noten_ev = calc_placement_ev(player_seat=1, kyoku=kyoku, scores=noten_result, payoff_matrix=payoff_matrix)
-deal_in_ev = calc_placement_ev(player_seat=1, kyoku=kyoku, scores=deal_in_result, payoff_matrix=payoff_matrix)
-
-print(f"Tenpai EV: {tenpai_ev}")
-print(f"Noten EV: {noten_ev}")
-print(f"Deal-in EV: {deal_in_ev}")
-
-print(f"Threshold: {(noten_ev - tenpai_ev) / (deal_in_ev - tenpai_ev)}")
-
-agari = Game_Agari(actor=1, target=2, han=4, fu=30)
-new_scores = agari.apply(0, [250, 250, 250, 250])
-
-print(new_scores)
