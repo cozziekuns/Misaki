@@ -12,13 +12,25 @@ class Game_Agari:
         self.han = han
         self.fu = fu
 
-    def apply(self, kyoku, score):
+    def apply(self, kyoku, score, riichi_sticks, homba):
         oya_index = kyoku % 4
 
         if self.actor == self.target:
-            return self.apply_tsumo(kyoku, score, self.actor == oya_index)
+            result = self.apply_tsumo(kyoku, score, self.actor == oya_index)
+
+            # Apply homba
+            for i in range(0, 4):
+                result[i] = result[i] + 3 * homba if self.actor == i else result[i] - 1 * homba
         else:
-            return self.apply_ron(kyoku, score, self.actor == oya_index)
+            result = self.apply_ron(kyoku, score, self.actor == oya_index)
+
+            # Apply homba
+            result[self.actor] += 3 * homba
+            result[self.target] -= 3 * homba
+
+        # Apply riichi sticks
+        result[self.actor] += riichi_sticks * 10
+        return result
 
     def apply_tsumo(self, kyoku, score, oya=False):
         result = score[:]
@@ -56,7 +68,7 @@ class Game_Agari:
 
     def round_up(self, points):
         return math.ceil(points / 100)
-        
+
     def calc_basic_points(self):
         if self.han >= 13:
             return 8000
