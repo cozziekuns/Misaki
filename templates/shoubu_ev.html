@@ -8,17 +8,20 @@
   <h2>Shoubu EV</h2>
   <h3>Inputs</h3>
 
-  Tenpai Push Discard Deal-in Rate: {{ tenpai_deal_in }}%
-  Payoff Matrix - 1st ({{payoff_matrix[0]}}) | 2nd ({{payoff_matrix[1]}}) | 3rd ({{payoff_matrix[2]}}) | 4th ({{payoff_matrix[3]}})<br><br>
+  Tenpai Push Discard Deal-in Rate: {{ tenpai_deal_in }}%<br><br>
   
   Player Seat: {{ formatted_player_seat }}<br>
   Opponent Seat: {{ formatted_opp_seat }}<br><br>
 
-  Round: {{ kyoku }}<br><br>
+  Round: {{ kyoku }}<br>
+  Riichi Sticks: {{ riichi_sticks }}<br>
+  Homba: {{ homba }}<br><br>
 
   Current Scores - East ({{curr_scores[0]}}) | South ({{curr_scores[1]}}) | West ({{curr_scores[2]}}) | North ({{curr_scores[3]}})<br><br>
   Player Placement Odds - 1st {{ curr_odds_matrix[0] }} | 2nd {{ curr_odds_matrix[1] }} | 3rd {{ curr_odds_matrix[2] }} | 4th {{ curr_odds_matrix[3] }}<br>
-  Player Placement EV: <strong>{{ curr_placement_ev }}pt</strong>
+  Player Placement EV: <strong>{{ curr_placement_ev }}pt</strong><br><br>
+
+  Payoff Matrix - 1st ({{payoff_matrix[0]}}) | 2nd ({{payoff_matrix[1]}}) | 3rd ({{payoff_matrix[2]}}) | 4th ({{payoff_matrix[3]}})
 
   <h3>Summary</h3>
 
@@ -56,7 +59,7 @@
   Player Fold EV: <strong>{{ fold_ev }}pt</strong><br><br>
 
   Player Base Shoubu EV: <strong>{{ shoubu_ev }}pt</strong><br>
-  Player Deal-in EV: <strong>{{ deal_in_ev }}pt</strong><br>
+  Player Deal-in EV: <strong>{{ deal_in_ev }}pt</strong>
   
   <br><br>
 

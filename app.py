@@ -40,6 +40,10 @@ def shoubu_ev():
     # --- Get Round Info ---
 
     kyoku = int(request.args['kyoku'])
+
+    riichi_sticks = int(request.args['riichi_sticks'])
+    homba = int(request.args['homba'])
+
     scores = [int(request.args[wind + '_player_score']) for wind in winds]
     
     real_scores = [0, 0, 0, 0]
@@ -48,7 +52,7 @@ def shoubu_ev():
         real_index = (i + (kyoku % 4)) % 4
         real_scores[real_index] = scores[i] // 100
 
-    round_info = Game_RoundInfo(kyoku, 0, 0, real_scores)
+    round_info = Game_RoundInfo(kyoku, riichi_sticks, homba, real_scores)
 
     # --- Get Shoubu Info ---
 
@@ -144,6 +148,8 @@ def shoubu_ev():
         section_titles=section_titles,
         real_player_seat=real_player_seat,
         kyoku=format_kyoku(kyoku),
+        riichi_sticks=riichi_sticks,
+        homba=homba,
         curr_scores=scores,
         formatted_player_seat=['East', 'South', 'West', 'North'][player_seat],
         formatted_opp_seat=['East', 'South', 'West', 'North'][opp_seat],
