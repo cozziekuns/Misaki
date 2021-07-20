@@ -8,6 +8,7 @@
   <h2>Shoubu EV</h2>
   <h3>Inputs</h3>
 
+  Tenpai Push Discard Deal-in Rate: {{ tenpai_deal_in }}%
   Payoff Matrix - 1st ({{payoff_matrix[0]}}) | 2nd ({{payoff_matrix[1]}}) | 3rd ({{payoff_matrix[2]}}) | 4th ({{payoff_matrix[3]}})<br><br>
   
   Player Seat: {{ formatted_player_seat }}<br>
@@ -52,9 +53,10 @@
   <br>
 
   Player Tenpai Push + Shoubu EV: <strong>{{ push_ev }}pt</strong><br>
-  Player Shoubu EV: <strong>{{ shoubu_ev }}pt</strong><br>
+  Player Fold EV: <strong>{{ fold_ev }}pt</strong><br><br>
+
+  Player Base Shoubu EV: <strong>{{ shoubu_ev }}pt</strong><br>
   Player Deal-in EV: <strong>{{ deal_in_ev }}pt</strong><br>
-  Player Fold EV: <strong>{{ fold_ev }}pt</strong>
   
   <br><br>
 

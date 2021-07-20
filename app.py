@@ -162,6 +162,7 @@ def shoubu_ev():
         deal_in_ev=formatted_result_payoff_matrix[2],
         fold_ev=f"{solver.fold_ev():.4f}",
         threshold=f"{solver.threshold():.2%}",
+        tenpai_deal_in=int(tenpai_deal_in * 100),
     )
 
 @app.route("/placement_ev")
