@@ -1,225 +1,252 @@
 from operator import add, mul
 
-import numpy as np
-from xgboost import XGBClassifier
 from game import Game_Agari
+from placement import Calculator_PlacementEv
 
-PERMUTATIONS = [
-    [0, 1, 2, 3], [0, 1, 3, 2], [0, 2, 1, 3], [0, 2, 3, 1], [0, 3, 1, 2], [0, 3, 2, 1],
-    [1, 0, 2, 3], [1, 0, 3, 2], [1, 2, 0, 3], [1, 2, 3, 0], [1, 3, 0, 2], [1, 3, 2, 0],
-    [2, 0, 1, 3], [2, 0, 3, 1], [2, 1, 0, 3], [2, 1, 3, 0], [2, 3, 0, 1], [2, 3, 1, 0],
-    [3, 0, 1, 2], [3, 0, 2, 1], [3, 1, 0, 2], [3, 1, 2, 0], [3, 2, 0, 1], [3, 2, 1, 0],
-]
+#=============================================================================
+# ** Solver_Shoubu
+#=============================================================================
 
-def calc_tenpai_result(scores, tenpai_matrix):
-    result = scores[:]
-    players_tenpai = sum(tenpai_matrix)
+class Solver_Shoubu:
 
-    if players_tenpai % 4 == 0:
+    def __init__(self, round_info, player_seat, opp_seat, payoff_matrix):
+        self.placement_ev_calculator = Calculator_PlacementEv()
+
+        self.round_info = round_info
+
+        self.player_seat = player_seat
+        self.opp_seat = opp_seat
+
+        self.payoff_matrix = payoff_matrix
+
+        self.shoubu_matrix = None
+        self.fold_matrix = None
+        self.result_matrix = None
+        self.result_odds_matrix = None
+        self.result_payoff_matrix = None
+
+    def next_kyoku_matrix(self):
+
+        def get_next_kyoku(i):
+            if i in [0, 1, 4] and self.player_seat == self.round_info.kyoku % 4:
+                return self.round_info.kyoku
+            elif i in [2, 3, 4, 5] and self.opp_seat == self.round_info.kyoku % 4:
+                return self.round_info.kyoku
+            else:
+                return self.round_info.kyoku + 1
+
+        return [get_next_kyoku(i) for i in range(0, 6)]
+
+    def shoubu_ev(self):
+        shoubu_ev_matrix = list(map(mul, self.shoubu_matrix, self.result_payoff_matrix))
+
+        return sum(shoubu_ev_matrix)
+
+    def push_ev(self, tenpai_deal_in):
+        a = self.shoubu_ev()
+        b = self.deal_in_ev()
+
+        return b * tenpai_deal_in + a * (1 - tenpai_deal_in)
+
+    def fold_ev(self):
+        fold_ev_matrix = list(map(mul, self.fold_matrix, self.result_payoff_matrix))
+
+        return sum(fold_ev_matrix)
+
+    def deal_in_ev(self):
+        return self.result_payoff_matrix[2]
+
+    def threshold(self):
+        a = self.shoubu_ev()
+        b = self.deal_in_ev()
+        c = self.fold_ev()
+
+        return (c - a) / (b - a)
+
+    def tenpai_seats(self, player_tenpai=True):
+        result = [0, 0, 0, 0]
+
+        if player_tenpai:
+            result[self.player_seat] = 1
+
+        result[self.opp_seat] = 1
+
         return result
 
-    for i in range(0, 4):
-        if players_tenpai == 3:
-            result[i] += (10 if tenpai_matrix[i] == 1 else -30)
-        elif players_tenpai == 2:
-            result[i] += (15 if tenpai_matrix[i] == 1 else -15)
-        else:
-            result[i] += (30 if tenpai_matrix[i] == 1 else -10)
+    def refresh_result_matrix(self, agari_value_matrix):
+        self.result_matrix = []
 
-    return result
+        actor_target_pairs = [
+            (self.player_seat, self.player_seat),
+            (self.player_seat, self.opp_seat),
+            (self.opp_seat, self.player_seat),
+            (self.opp_seat, self.opp_seat),
+        ]
 
-def calc_placement_ev(player_seat, kyoku, scores, payoff_matrix):
-    prob_matrix = calc_prob_matrix(kyoku, scores)
+        for i in range(0, 4):
+            agari_result = Game_Agari(
+                actor=actor_target_pairs[i][0],
+                target=actor_target_pairs[i][1],
+                han=agari_value_matrix[i][0],
+                fu=agari_value_matrix[i][1],
+            ).resolve(self.round_info)
 
-    print(f"{[kyoku] + scores}")
+            self.result_matrix.append(agari_result)
 
-    strings = ['1st: ', '2nd: ', '3rd: ', '4th: ']
-    for i in range(0, 4):
-        print(f"{strings[i]} {prob_matrix[player_seat][i]:.3%}")
-
-    result = np.dot(prob_matrix[player_seat], payoff_matrix)
-
-    print(f"Placement EV: {result}")
-    print("")
-
-    return result
-
-def calc_prob_matrix(kyoku, scores):
-    model = XGBClassifier()
-    model.load_model('./static/models/full.model')
-
-    input_vector = [kyoku] + scores
-    probs = model.predict_proba(np.array([input_vector]))[0]
-
-    totals = [
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-    ]
-
-    for i in range(0, 24):
-        for j in range(0, 4):
-            totals[j][PERMUTATIONS[i][j]] += probs[i]
-
-    return totals
-
-def solve_fold_player_draw(wall, player_draws, opp_draws, opp_waits):
-    if player_draws == 0:
-        return [0, 0, 0, 0, 0, 1]
-
-    player_block_chance = opp_waits / wall
-    advance_chance = 1 - player_block_chance
-
-    block_matrix = solve_fold_opp_draw(wall - 1, player_draws - 1, opp_draws, opp_waits - 1)
-    block_matrix = [player_block_chance * x for x in block_matrix]
-
-    advance_matrix = solve_fold_opp_draw(wall - 1, player_draws - 1, opp_draws, opp_waits)
-    advance_matrix = [advance_chance * x for x in advance_matrix]
-
-    return list(map(add, block_matrix, advance_matrix))
-
-def solve_fold_opp_draw(wall, player_draws, opp_draws, opp_waits):
-    if opp_draws == 0:
-        return [0, 0, 0, 0, 0, 1]
-
-    opp_tsumo_chance = opp_waits / wall
-    advance_chance = 1 - opp_tsumo_chance
-
-    action_matrix = [0, 0, 0, opp_tsumo_chance, 0, 0]
-
-    advance_matrix = solve_fold_player_draw(wall - 1, player_draws, opp_draws - 1, opp_waits)
-    advance_matrix = [advance_chance * x for x in advance_matrix]
-
-    return list(map(add, action_matrix, advance_matrix))
-
-def solve_shoubu_player_draw(wall, player_draws, opp_draws, player_tiles, opp_tiles):
-    if player_draws == 0:
-        return [0, 0, 0, 0, 1, 0]
-
-    player_tsumo_chance = player_tiles / wall
-    opp_ron_chance = opp_tiles / wall
-    advance_chance = 1 - player_tsumo_chance - opp_ron_chance
-
-    action_matrix = [player_tsumo_chance, 0, opp_ron_chance, 0, 0, 0]
-
-    advance_matrix = solve_shoubu_opp_draw(wall - 1, player_draws - 1, opp_draws, player_tiles, opp_tiles)
-    advance_matrix = [advance_chance * x for x in advance_matrix]
-
-    return list(map(add, action_matrix, advance_matrix))
-
-def solve_shoubu_opp_draw(wall, player_draws, opp_draws, player_tiles, opp_tiles):
-    if opp_draws == 0:
-        return [0, 0, 0, 0, 1, 0]
-
-    opp_tsumo_chance = opp_tiles / wall
-    player_ron_chance = player_tiles / wall
-    advance_chance = 1 - player_ron_chance - opp_tsumo_chance
-
-    action_matrix = [0, player_ron_chance, 0, opp_tsumo_chance, 0, 0]
-
-    advance_matrix = solve_shoubu_player_draw(wall - 1, player_draws, opp_draws - 1, player_tiles, opp_tiles)
-    advance_matrix = [advance_chance * x for x in advance_matrix]
-
-    return list(map(add, action_matrix, advance_matrix))
-
-"""
-wall = 24 + 13
-
-player_draws = 6
-opp_draws = 6
-
-player_waits = 2
-opp_waits = 2
-"""
-
-wall = 43 + 13
-player_draws = 10
-opp_draws = 11
-
-player_waits = 3
-opp_waits = 3
-
-riichi_sticks = 1
-homba = 1
-
-shoubu_probability_matrix = solve_shoubu_opp_draw(wall, player_draws, opp_draws, player_waits, opp_waits)
-fold_probability_matrix = solve_fold_opp_draw(wall, player_draws, opp_draws, opp_waits)
-
-kyoku = 4
-curr_scores = [178, 425, 174, 213]
-
-player_seat = 0
-opp_seat = 1
-
-tenpai_seats = [0, 0, 0, 0]
-tenpai_seats[player_seat] = 1
-tenpai_seats[opp_seat] = 1
-
-noten_seats = [0, 0, 0, 0]
-noten_seats[opp_seat] = 1
-
-player_tsumo_result = Game_Agari(actor=player_seat, target=player_seat, han=1, fu=30).apply(kyoku, curr_scores, riichi_sticks, homba)
-player_ron_result = Game_Agari(actor=player_seat, target=opp_seat, han=1, fu=30).apply(kyoku, curr_scores, riichi_sticks, homba)
-opp_tsumo_result = Game_Agari(actor=opp_seat, target=opp_seat, han=4, fu=30).apply(kyoku, curr_scores, riichi_sticks, homba)
-opp_ron_result = Game_Agari(actor=opp_seat, target=player_seat, han=3, fu=40).apply(kyoku, curr_scores, riichi_sticks, homba)
-
-tenpai_result = calc_tenpai_result(curr_scores, tenpai_seats)
-noten_result = calc_tenpai_result(curr_scores, noten_seats)
-
-payoff_matrix = [90, 45, 0, -135]
-result_matrix = [
-    player_tsumo_result,
-    player_ron_result,
-    opp_ron_result,
-    opp_tsumo_result,
-    tenpai_result,
-    noten_result
-]
-
-result_payoff_matrix = []
-
-for i in range(0, len(result_matrix)):
-    if i in [0, 1, 4] and player_seat == kyoku % 4:
-        next_kyoku = kyoku
-    elif i in [2, 3, 4, 5] and opp_seat == kyoku % 4:
-        next_kyoku = kyoku
-    else:
-        next_kyoku = kyoku + 1
-
-    result_payoff_matrix.append(
-        calc_placement_ev(
-            player_seat=player_seat,
-            kyoku=next_kyoku,
-            scores=result_matrix[i],
-            payoff_matrix=payoff_matrix,
+        self.result_matrix.append(
+            self.calc_tenpai_result(
+                self.round_info,
+                self.tenpai_seats(player_tenpai=True),
+            ),
         )
-    )
 
-print(result_payoff_matrix)
+        self.result_matrix.append(
+            self.calc_tenpai_result(
+                self.round_info,
+                self.tenpai_seats(player_tenpai=False),
+            ),
+        )
 
-# print(shoubu_probability_matrix)
-# print(fold_probability_matrix)
-# print(result_payoff_matrix)
+    def solve(self, live_wall, player_waits, opp_waits):
+        wall = live_wall + 13
 
-deal_in_prob = 0
+        opp_draws = (live_wall + (self.opp_seat - self.player_seat) % 4) // 4
+        player_draws = live_wall // 4
 
-shoubu_ev_matrix = list(map(mul, shoubu_probability_matrix, result_payoff_matrix))
-shoubu_ev = sum(shoubu_ev_matrix)
+        self.shoubu_matrix = self.solve_shoubu_opp_draw(
+            wall,
+            player_draws,
+            opp_draws,
+            player_waits,
+            opp_waits,
+        )
 
-fold_ev_matrix = list(map(mul, fold_probability_matrix, result_payoff_matrix))
-fold_ev = sum(fold_ev_matrix)
+        self.fold_matrix = self.solve_fold_opp_draw(
+            wall,
+            player_draws,
+            opp_draws,
+            opp_waits,
+        )
 
-deal_in_ev = result_payoff_matrix[2]
+        self.result_payoff_matrix = []
+        self.result_odds_matrix = []
 
-print(f"Push EV: {deal_in_ev * deal_in_prob + shoubu_ev * (1 - deal_in_prob)}")
-print(f"Shoubu EV: {shoubu_ev}")
-print(f"Deal-in EV: {deal_in_ev}")
-print(f"Fold EV: {fold_ev}")
+        kyoku_matrix = self.next_kyoku_matrix()
 
-print(shoubu_probability_matrix)
-print(fold_probability_matrix)
+        for i in range(0, 6):
+            self.placement_ev_calculator.refresh(
+                kyoku=kyoku_matrix[i],
+                scores=self.result_matrix[i],
+                payoff_matrix=self.payoff_matrix,
+            )
 
-threshold = (fold_ev - shoubu_ev) / (deal_in_ev - shoubu_ev)
-print(f"Threshold: {threshold}")
-print("")
+            self.result_odds_matrix.append(self.placement_ev_calculator.prob_matrix)
+
+            self.result_payoff_matrix.append(
+                self.placement_ev_calculator.calc_placement_ev(self.player_seat)
+            )
+
+    def solve_fold_player_draw(self, wall, player_draws, opp_draws, opp_waits):
+        if player_draws == 0:
+            return [0, 0, 0, 0, 0, 1]
+
+        player_block_chance = opp_waits / wall
+        advance_chance = 1 - player_block_chance
+
+        block_matrix = self.solve_fold_opp_draw(
+            wall - 1,
+            player_draws - 1,
+            opp_draws,
+            opp_waits - 1,
+        )
+        block_matrix = [player_block_chance * x for x in block_matrix]
+
+        advance_matrix = self.solve_fold_opp_draw(
+            wall - 1,
+            player_draws - 1,
+            opp_draws,
+            opp_waits,
+        )
+        advance_matrix = [advance_chance * x for x in advance_matrix]
+
+        return list(map(add, block_matrix, advance_matrix))
+
+    def solve_fold_opp_draw(self, wall, player_draws, opp_draws, opp_waits):
+        if opp_draws == 0:
+            return [0, 0, 0, 0, 0, 1]
+
+        opp_tsumo_chance = opp_waits / wall
+        advance_chance = 1 - opp_tsumo_chance
+
+        action_matrix = [0, 0, 0, opp_tsumo_chance, 0, 0]
+
+        advance_matrix = self.solve_fold_player_draw(
+            wall - 1,
+            player_draws,
+            opp_draws - 1,
+            opp_waits,
+        )
+        advance_matrix = [advance_chance * x for x in advance_matrix]
+
+        return list(map(add, action_matrix, advance_matrix))
+
+    def solve_shoubu_player_draw(self, wall, player_draws, opp_draws, player_waits, opp_waits):
+        if player_draws == 0:
+            return [0, 0, 0, 0, 1, 0]
+
+        player_tsumo_chance = player_waits / wall
+        opp_ron_chance = opp_waits / wall
+        advance_chance = 1 - player_tsumo_chance - opp_ron_chance
+
+        action_matrix = [player_tsumo_chance, 0, opp_ron_chance, 0, 0, 0]
+
+        advance_matrix = self.solve_shoubu_opp_draw(
+            wall - 1,
+            player_draws - 1,
+            opp_draws,
+            player_waits,
+            opp_waits,
+        )
+
+        advance_matrix = [advance_chance * x for x in advance_matrix]
+
+        return list(map(add, action_matrix, advance_matrix))
+
+    def solve_shoubu_opp_draw(self, wall, player_draws, opp_draws, player_waits, opp_waits):
+        if opp_draws == 0:
+            return [0, 0, 0, 0, 1, 0]
+
+        opp_tsumo_chance = opp_waits / wall
+        player_ron_chance = player_waits / wall
+        advance_chance = 1 - player_ron_chance - opp_tsumo_chance
+
+        action_matrix = [0, player_ron_chance, 0, opp_tsumo_chance, 0, 0]
+
+        advance_matrix = self.solve_shoubu_player_draw(
+            wall - 1,
+            player_draws,
+            opp_draws - 1,
+            player_waits,
+            opp_waits,
+        )
+
+        advance_matrix = [advance_chance * x for x in advance_matrix]
+
+        return list(map(add, action_matrix, advance_matrix))
+
+    def calc_tenpai_result(self, round_info, tenpai_matrix):
+        result = round_info.scores[:]
+        players_tenpai = sum(tenpai_matrix)
+
+        if players_tenpai % 4 == 0:
+            return result
+
+        for i in range(0, 4):
+            if players_tenpai == 3:
+                result[i] += (10 if tenpai_matrix[i] == 1 else -30)
+            elif players_tenpai == 2:
+                result[i] += (15 if tenpai_matrix[i] == 1 else -15)
+            else:
+                result[i] += (30 if tenpai_matrix[i] == 1 else -10)
+
+        return result

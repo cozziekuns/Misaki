@@ -2,12 +2,17 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Placement EV Calculator</title>
+  <title>Shoubu EV Calculator</title>
 </head>
 <body>
-  <h2>Placement EV Calculator</h2>
+  <h2>Shoubu EV Calculator</h2>
 
-  <form action="/placement_ev" method="get">
+  <form action="/shoubu_ev" method="get">
+    <label for="tenpai_deal_in">Tenpai Push Discard Deal-in Rate (%)</label>
+    <input type="number" id="tenpai_deal_in" name="tenpai_deal_in" value="0">
+
+    <br><br>
+
     <label for="kyoku">Current Round</label>
     <select name="kyoku" id="kyoku">
       <option value="0">East 1</option>
@@ -18,14 +23,24 @@
       <option value="5">South 2</option>
       <option value="6">South 3</option>
       <option value="7">South 4</option>
-    </select><br><br>
+    </select>
+
+    <br><br>
     
     <label for="player_seat">Player Seat</label>
     <select name="player_seat" id="player_seat">
       <option value="0">East</option>
-      <option value="1">South</option>
+      <option value="1" selected>South</option>
       <option value="2">West</option>
       <option value="3">North</option>
+    </select><br>
+
+    <label for="opp_seat">Opponent Seat</label>
+    <select name="opp_seat" id="opp_seat">
+      <option value="0">East</option>
+      <option value="1">South</option>
+      <option value="2">West</option>
+      <option value="3" selected>North</option>
     </select>
 
     <br><br>
@@ -42,6 +57,49 @@
     <label for="north_player_score">North Player Score</label>
     <input type="number" id="north_player_score" name="north_player_score" value="25000">
     
+    <br><br>
+
+    <label for="tiles_live_wall">Tiles in Live Wall</label>
+    <input type="number" id="tiles_live_wall" name="tiles_live_wall" value="24"><br>
+
+    <label for="player_waits">Player Waits in Wall</label>
+    <input type="number" id="player_waits" name="player_waits" value="2"><br>
+    
+    <label for="opp_waits">Opponent Waits in Wall</label>
+    <input type="number" id="opp_waits" name="opp_waits" value="2">
+
+    <br><br>
+
+    Player Tsumo - 
+    <label for="player_tsumo_han">Han</label>
+    <input type="number" id="player_tsumo_han" name="player_tsumo_han" value="4">
+    <label for="player_tsumo_fu">Fu</label>
+    <input type="number" id="player_tsumo_fu" name="player_tsumo_fu" value="30">
+
+    <br>
+
+    Player Ron - 
+    <label for="player_ron_han">Han</label>
+    <input type="number" id="player_ron_han" name="player_ron_han" value="4">
+    <label for="player_ron_fu">Fu</label>
+    <input type="number" id="player_ron_fu" name="player_ron_fu" value="30">
+
+    <br>
+
+    Opponent Tsumo - 
+    <label for="opp_tsumo_han">Han</label>
+    <input type="number" id="opp_tsumo_han" name="opp_tsumo_han" value="4">
+    <label for="opp_tsumo_fu">Fu</label>
+    <input type="number" id="opp_tsumo_fu" name="opp_tsumo_fu" value="30">
+
+    <br>
+
+    Opponent Ron - 
+    <label for="opp_ron_han">Han</label>
+    <input type="number" id="opp_ron_han" name="opp_ron_han" value="4">
+    <label for="opp_ron_fu">Fu</label>
+    <input type="number" id="opp_ron_fu" name="opp_ron_fu" value="30">
+
     <br><br>
 
     <label for="first_place_bonus">First Place Bonus</label>
@@ -66,5 +124,4 @@
   <br>
   * Assumes no homba or riichi sticks on the table.
 </body>
-  <script type="text/javascript" src="placement_ev.js"></script>
 </html>

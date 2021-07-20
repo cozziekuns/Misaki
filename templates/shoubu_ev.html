@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Shoubu EV Calculator</title>
+</head>
+<body>
+  <h2>Shoubu EV</h2>
+  <h3>Inputs</h3>
+
+  Payoff Matrix - 1st ({{payoff_matrix[0]}}) | 2nd ({{payoff_matrix[1]}}) | 3rd ({{payoff_matrix[2]}}) | 4th ({{payoff_matrix[3]}})<br><br>
+  
+  Player Seat: {{ formatted_player_seat }}<br>
+  Opponent Seat: {{ formatted_opp_seat }}<br><br>
+
+  Round: {{ kyoku }}<br><br>
+
+  Current Scores - East ({{curr_scores[0]}}) | South ({{curr_scores[1]}}) | West ({{curr_scores[2]}}) | North ({{curr_scores[3]}})<br><br>
+  Player Placement Odds - 1st {{ curr_odds_matrix[0] }} | 2nd {{ curr_odds_matrix[1] }} | 3rd {{ curr_odds_matrix[2] }} | 4th {{ curr_odds_matrix[3] }}<br>
+  Player Placement EV: <strong>{{ curr_placement_ev }}pt</strong>
+
+  <h3>Summary</h3>
+
+  <table style="table-layout: fixed; width: 720px; text-align: center">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Player Tsumo</th>
+        <th>Player Ron</th>
+        <th>Opp. Ron</th>
+        <th>Opp. Tsumo</th>
+        <th>Tenpai</th>
+        <th>Noten</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="text-align: justify">Shoubu</td>
+        {% for i in range(0, 6) %}
+          <td>{{ shoubu_odds[i] }}</td>
+        {% endfor %}
+      </tr>
+      <tr>
+        <td style="text-align: justify">Fold</td>
+        {% for i in range(0, 6) %}
+          <td>{{ fold_odds[i] }}</td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+
+  <br>
+
+  Player Tenpai Push + Shoubu EV: <strong>{{ push_ev }}pt</strong><br>
+  Player Shoubu EV: <strong>{{ shoubu_ev }}pt</strong><br>
+  Player Deal-in EV: <strong>{{ deal_in_ev }}pt</strong><br>
+  Player Fold EV: <strong>{{ fold_ev }}pt</strong>
+  
+  <br><br>
+
+  Tenpai Deal-in Threshold: <strong>{{ threshold }}</strong>
+
+  {% for i in range(0, 6) %}
+
+  <h3>{{ section_titles[i] }}</h3>
+
+  Round: {{ next_kyoku_matrix[i] }}<br><br>
+  Scores - East ({{ result_matrix[i][0] }}) | South ({{ result_matrix[i][1] }}) | West ({{ result_matrix[i][2] }}) | North ({{ result_matrix[i][3] }})<br>
+  Differential - East ({{ result_diff_matrix[i][0] }}) | South ({{ result_diff_matrix[i][1] }}) | West ({{ result_diff_matrix[i][2] }}) | North ({{ result_diff_matrix[i][3] }}) 
+  <br><br>
+  Player Placement Odds - 1st {{ result_odds_matrix[i][real_player_seat][0] }} | 2nd {{ result_odds_matrix[i][real_player_seat][1]  }} | 3rd {{ result_odds_matrix[i][real_player_seat][2] }} | 4th {{ result_odds_matrix[i][real_player_seat][3] }}<br>
+  Player Placement EV: <strong>{{ result_payoff_matrix[i] }}pt</strong>
+
+  {% endfor %}
+
+  <br><br>
+
+  <input type="button" onclick="location.href='javascript:history.back()'" value="Back">
+
+  <br><br>
+  <hr>
+  * Based off Tenhou Houou room games only. Will not be accurate for other rulesets / playerbases. 
+  <br>
+  * Assumes no homba or riichi sticks on the table.
+</body>
+</html>

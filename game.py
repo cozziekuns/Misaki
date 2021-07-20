@@ -1,6 +1,23 @@
 import math
 
 #==============================================================================
+# ** Game_RoundInfo
+#==============================================================================
+
+class Game_RoundInfo:
+
+    def __init__(self, kyoku, riichi_sticks, homba, scores):
+        self.kyoku = kyoku
+
+        self.riichi_sticks = riichi_sticks
+        self.homba = homba
+
+        self.scores = scores
+
+    def oya_index(self):
+        return self.kyoku % 4
+
+#==============================================================================
 # ** Game_Agari
 #==============================================================================
 
@@ -12,34 +29,35 @@ class Game_Agari:
         self.han = han
         self.fu = fu
 
-    def apply(self, kyoku, score, riichi_sticks, homba):
-        oya_index = kyoku % 4
-
+    def resolve(self, round_info):
         if self.actor == self.target:
-            result = self.apply_tsumo(kyoku, score, self.actor == oya_index)
+            result = self.apply_tsumo(round_info)
 
             # Apply homba
             for i in range(0, 4):
-                result[i] = result[i] + 3 * homba if self.actor == i else result[i] - 1 * homba
+                if self.actor == i:
+                    result[i] += 3 * round_info.homba 
+                else:
+                    result[i] -= round_info.homba
         else:
-            result = self.apply_ron(kyoku, score, self.actor == oya_index)
+            result = self.apply_ron(round_info)
 
             # Apply homba
-            result[self.actor] += 3 * homba
-            result[self.target] -= 3 * homba
+            result[self.actor] += 3 * round_info.homba
+            result[self.target] -= 3 * round_info.homba
 
         # Apply riichi sticks
-        result[self.actor] += riichi_sticks * 10
+        result[self.actor] += round_info.riichi_sticks * 10
+
         return result
 
-    def apply_tsumo(self, kyoku, score, oya=False):
-        result = score[:]
-        oya_index = kyoku % 4
+    def apply_tsumo(self, round_info):
+        result = round_info.scores[:]
 
         ko_diff = self.calc_ko_tsumo_payment()
         oya_diff = diff = self.calc_oya_tsumo_payment()
 
-        if oya:
+        if self.actor == round_info.oya_index():
             for i in range(0, 4):
                 if i == self.actor:
                     result[i] += oya_diff * 3
@@ -49,17 +67,21 @@ class Game_Agari:
             for i in range(0, 4):
                 if i == self.actor:
                     result[i] += 2 * ko_diff + oya_diff
-                elif i == oya_index:
+                elif i == round_info.oya_index():
                     result[i] -= oya_diff
                 else:
                     result[i] -= ko_diff
 
         return result
 
-    def apply_ron(self, kyoku, score, oya=False):
-        result = score[:]
+    def apply_ron(self, round_info):
+        result = round_info.scores[:]
+        diff = None
 
-        diff = self.calc_oya_ron_payment() if oya else self.calc_ko_ron_payment()
+        if self.actor == round_info.oya_index():
+            diff = self.calc_oya_ron_payment()
+        else:
+            diff = self.calc_ko_ron_payment()
 
         result[self.actor] += diff
         result[self.target] -= diff
