@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Shoubu EV Calculator</title>
+  <link rel="stylesheet" href="static/style.css">
 </head>
 <body>
   <h2>Shoubu EV Calculator</h2>
@@ -13,116 +14,115 @@
 
     <br><br>
 
-    <label for="kyoku">Current Round</label>
-    <select name="kyoku" id="kyoku">
-      <option value="0">East 1</option>
-      <option value="1">East 2</option>
-      <option value="2">East 3</option>
-      <option value="3">East 4</option>
-      <option value="4">South 1</option>
-      <option value="5">South 2</option>
-      <option value="6">South 3</option>
-    </select>
+    <div class="grid-align">
+      <label for="kyoku">Current Round</label>
+      <select name="kyoku" id="kyoku">
+        <option value="0">East 1</option>
+        <option value="1">East 2</option>
+        <option value="2">East 3</option>
+        <option value="3">East 4</option>
+        <option value="4">South 1</option>
+        <option value="5">South 2</option>
+        <option value="6">South 3</option>
+      </select>
     
-    <br><br>
+      <label for="riichi_sticks">Riichi Sticks</label>
+      <input type="number" id="riichi_sticks" name="riichi_sticks" value="0">
 
-    <label for="riichi_sticks">Riichi Sticks</label>
-    <input type="number" id="riichi_sticks" name="riichi_sticks" value="0"><br>
+      <label for="homba">Homba</label>
+      <input type="number" id="homba" name="homba" value="0">
+    </div>
 
-    <label for="homba">Homba</label>
-    <input type="number" id="homba" name="homba" value="0">
-
-    <br><br>
+    <br>
     
-    <label for="player_seat">Player Seat</label>
-    <select name="player_seat" id="player_seat">
-      <option value="0">East</option>
-      <option value="1" selected>South</option>
-      <option value="2">West</option>
-      <option value="3">North</option>
-    </select><br>
+    <div class="grid-align">
+      <label for="player_seat">Player Seat</label>
+      <select name="player_seat" id="player_seat">
+        <option value="0">East</option>
+        <option value="1" selected>South</option>
+        <option value="2">West</option>
+        <option value="3">North</option>
+      </select>
 
-    <label for="opp_seat">Opponent Seat</label>
-    <select name="opp_seat" id="opp_seat">
-      <option value="0">East</option>
-      <option value="1">South</option>
-      <option value="2">West</option>
-      <option value="3" selected>North</option>
-    </select>
-
-    <br><br>
-
-    <label for="east_player_score">East Player Score</label>
-    <input type="number" id="east_player_score" name="east_player_score" value="25000"><br>
-
-    <label for="south_player_score">South Player Score</label>
-    <input type="number" id="south_player_score" name="south_player_score" value="25000"><br>
-
-    <label for="west_player_score">West Player Score</label>
-    <input type="number" id="west_player_score" name="west_player_score" value="25000"><br>
-
-    <label for="north_player_score">North Player Score</label>
-    <input type="number" id="north_player_score" name="north_player_score" value="25000">
-    
-    <br><br>
-
-    <label for="tiles_live_wall">Tiles in Live Wall</label>
-    <input type="number" id="tiles_live_wall" name="tiles_live_wall" value="24"><br>
-
-    <label for="player_waits">Player Waits in Wall</label>
-    <input type="number" id="player_waits" name="player_waits" value="2"><br>
-    
-    <label for="opp_waits">Opponent Waits in Wall</label>
-    <input type="number" id="opp_waits" name="opp_waits" value="2">
-
-    <br><br>
-
-    Player Tsumo - 
-    <label for="player_tsumo_han">Han</label>
-    <input type="number" id="player_tsumo_han" name="player_tsumo_han" value="4">
-    <label for="player_tsumo_fu">Fu</label>
-    <input type="number" id="player_tsumo_fu" name="player_tsumo_fu" value="30">
+      <label for="opp_seat">Opponent Seat</label>
+      <select name="opp_seat" id="opp_seat">
+        <option value="0">East</option>
+        <option value="1">South</option>
+        <option value="2">West</option>
+        <option value="3" selected>North</option>
+      </select>
+    </div>
 
     <br>
 
-    Player Ron - 
-    <label for="player_ron_han">Han</label>
-    <input type="number" id="player_ron_han" name="player_ron_han" value="4">
-    <label for="player_ron_fu">Fu</label>
-    <input type="number" id="player_ron_fu" name="player_ron_fu" value="30">
+    <div class="grid-align">
+      <label for="east_player_score">East Player Score</label>
+      <input type="number" id="east_player_score" name="east_player_score" value="25000">
+
+      <label for="south_player_score">South Player Score</label>
+      <input type="number" id="south_player_score" name="south_player_score" value="25000">
+
+      <label for="west_player_score">West Player Score</label>
+      <input type="number" id="west_player_score" name="west_player_score" value="25000">
+
+      <label for="north_player_score">North Player Score</label>
+      <input type="number" id="north_player_score" name="north_player_score" value="25000">
+    </div>
+      
+    <br>
+
+    <div class="grid-align">
+      <label for="tiles_live_wall">Tiles in Live Wall</label>
+      <input type="number" id="tiles_live_wall" name="tiles_live_wall" value="24">
+
+      <label for="player_waits">Player Waits in Wall</label>
+      <input type="number" id="player_waits" name="player_waits" value="2">
+      
+      <label for="opp_waits">Opponent Waits in Wall</label>
+      <input type="number" id="opp_waits" name="opp_waits" value="2">
+    </div>
 
     <br>
 
-    Opponent Tsumo - 
-    <label for="opp_tsumo_han">Han</label>
-    <input type="number" id="opp_tsumo_han" name="opp_tsumo_han" value="4">
-    <label for="opp_tsumo_fu">Fu</label>
-    <input type="number" id="opp_tsumo_fu" name="opp_tsumo_fu" value="30">
+    <div class="grid-align-4">
+      <label for="player_tsumo_han">Player Tsumo - Han</label>
+      <input type="number" id="player_tsumo_han" name="player_tsumo_han" value="4">
+      <label for="player_tsumo_fu">Fu</label>
+      <input type="number" id="player_tsumo_fu" name="player_tsumo_fu" value="30">
+
+      <label for="player_ron_han">Player Ron - Han</label>
+      <input type="number" id="player_ron_han" name="player_ron_han" value="4">
+      <label for="player_ron_fu">Fu</label>
+      <input type="number" id="player_ron_fu" name="player_ron_fu" value="30">
+
+      <label for="opp_tsumo_han">Opponent Tsumo - Han</label>
+      <input type="number" id="opp_tsumo_han" name="opp_tsumo_han" value="4">
+      <label for="opp_tsumo_fu">Fu</label>
+      <input type="number" id="opp_tsumo_fu" name="opp_tsumo_fu" value="30">
+ 
+      <label for="opp_ron_han">Opponent Ron - Han</label>
+      <input type="number" id="opp_ron_han" name="opp_ron_han" value="4">
+      <label for="opp_ron_fu">Fu</label>
+      <input type="number" id="opp_ron_fu" name="opp_ron_fu" value="30">
+    </div>
 
     <br>
 
-    Opponent Ron - 
-    <label for="opp_ron_han">Han</label>
-    <input type="number" id="opp_ron_han" name="opp_ron_han" value="4">
-    <label for="opp_ron_fu">Fu</label>
-    <input type="number" id="opp_ron_fu" name="opp_ron_fu" value="30">
+    <div class="grid-align">
+      <label for="first_place_bonus">First Place Bonus</label>
+      <input type="number" id="first_place_bonus" name="first_place_bonus" value="90">
 
-    <br><br>
+      <label for="second_place_bonus">Second Place Bonus</label>
+      <input type="number" id="second_place_bonus" name="second_place_bonus" value="45">
 
-    <label for="first_place_bonus">First Place Bonus</label>
-    <input type="number" id="first_place_bonus" name="first_place_bonus" value="90"><br>
+      <label for="third_place_bonus">Third Place Bonus</label>
+      <input type="number" id="third_place_bonus" name="third_place_bonus" value="0">
 
-    <label for="second_place_bonus">Second Place Bonus</label>
-    <input type="number" id="second_place_bonus" name="second_place_bonus" value="45"><br>
+      <label for="fourth_place_bonus">Fourth Place Bonus</label>
+      <input type="number" id="fourth_place_bonus" name="fourth_place_bonus" value="-135">
+    </div>
 
-    <label for="third_place_bonus">Third Place Bonus</label>
-    <input type="number" id="third_place_bonus" name="third_place_bonus" value="0"><br>
-
-    <label for="fourth_place_bonus">Fourth Place Bonus</label>
-    <input type="number" id="fourth_place_bonus" name="fourth_place_bonus" value="-135">
-
-    <br><br>
-
+    <br>
     <input type="submit" value="Calculate Placement EV">
   </form>
   <br>
