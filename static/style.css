@@ -4,6 +4,10 @@ body {
   margin: 16px;
 }
 
+input[type="number"] {
+  width: 6em;
+}
+
 div.grid-align {
   display: grid;
   grid-template-columns: max-content max-content;
