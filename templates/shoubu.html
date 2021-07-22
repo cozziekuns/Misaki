@@ -9,10 +9,12 @@
   <h2>Shoubu EV Calculator</h2>
 
   <form action="/shoubu_ev" method="get">
-    <label for="tenpai_deal_in">Tenpai Push Discard Deal-in Rate (%)</label>
-    <input type="number" id="tenpai_deal_in" name="tenpai_deal_in" value="0">
+    <div class="grid-align">
+      <label for="tenpai_deal_in">Tenpai Push Discard Deal-in Rate (%)</label>
+      <input type="number" id="tenpai_deal_in" name="tenpai_deal_in" value="0">
+    </div>
 
-    <br><br>
+    <br>
 
     <div class="grid-align">
       <label for="kyoku">Current Round</label>
@@ -25,7 +27,7 @@
         <option value="5">South 2</option>
         <option value="6">South 3</option>
       </select>
-    
+
       <label for="riichi_sticks">Riichi Sticks</label>
       <input type="number" id="riichi_sticks" name="riichi_sticks" value="0">
 
@@ -34,7 +36,7 @@
     </div>
 
     <br>
-    
+
     <div class="grid-align">
       <label for="player_seat">Player Seat</label>
       <select name="player_seat" id="player_seat">
@@ -68,7 +70,7 @@
       <label for="north_player_score">North Player Score</label>
       <input type="number" id="north_player_score" name="north_player_score" value="25000">
     </div>
-      
+
     <br>
 
     <div class="grid-align">
@@ -77,7 +79,7 @@
 
       <label for="player_waits">Player Waits in Wall</label>
       <input type="number" id="player_waits" name="player_waits" value="2">
-      
+
       <label for="opp_waits">Opponent Waits in Wall</label>
       <input type="number" id="opp_waits" name="opp_waits" value="2">
     </div>
@@ -99,7 +101,7 @@
       <input type="number" id="opp_tsumo_han" name="opp_tsumo_han" value="4">
       <label for="opp_tsumo_fu">Fu</label>
       <input type="number" id="opp_tsumo_fu" name="opp_tsumo_fu" value="30">
- 
+
       <label for="opp_ron_han">Opponent Ron - Han</label>
       <input type="number" id="opp_ron_han" name="opp_ron_han" value="4">
       <label for="opp_ron_fu">Fu</label>
@@ -127,7 +129,7 @@
   </form>
   <br>
   <hr>
-  * Based off Tenhou Houou room games only. Will not be accurate for other rulesets / playerbases. 
+  * Based off Tenhou Houou room games only. Will not be accurate for other rulesets / playerbases.
   <br>
   * Assumes no homba or riichi sticks on the table.
 </body>
