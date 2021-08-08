@@ -7,6 +7,7 @@ from flask import render_template
 from flask import request
 from flask import url_for
 
+from deal_in import get_deal_in_probs
 from game import Game_RoundInfo
 from placement import Calculator_PlacementEv
 from solver import Solver_Shoubu
@@ -27,6 +28,25 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     return render_template('index.html')
+
+@app.route("/deal_in")
+def deal_in():
+    return render_template('deal_in.html')
+
+@app.route("/calc_deal_in")
+def calc_deal_in():
+    discard_string = request.args['discards']
+    
+    deal_in_prob_strings = [
+        f'{prob:.1%}'
+        for prob in get_deal_in_probs(discard_string)
+    ]
+
+    return render_template(
+        'deal_in_probs.html',
+        discard_string=discard_string,
+        deal_in_probs=deal_in_prob_strings,
+    )
 
 @app.route("/shoubu")
 def shoubu():

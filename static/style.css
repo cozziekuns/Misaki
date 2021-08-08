@@ -4,6 +4,10 @@ body {
   margin: 16px;
 }
 
+input.discards {
+  width: 40em;
+}
+
 input[type="number"] {
   width: 6em;
 }
@@ -26,4 +30,18 @@ div.grid-align-4 {
 
 div.grid-align-4 label {
   text-align: right; 
+}
+
+table {
+  border-spacing: 8px 4px;
+}
+
+img.tile {
+  width: 40px;
+}
+
+img.tile-under {
+  position: absolute;
+  width: 40px;
+  z-index: -1;
 }

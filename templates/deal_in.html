@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Deal-in Rate Calculator</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+  <h2>Deal-in Rate Calculator</h2>
+
+  <form action="/calc_deal_in" method="get">
+    <div class="grid-align">
+      <label for="discards">Discard Pile</label>
+      <input type="text" id="discards" class="discards" name="discards" required maxlength="40" size="40">
+    </div>
+    
+    <br>
+
+    <table>
+      <tbody>
+        <tr>
+          {% for i in range (0, 9) %}
+          <td>
+            <img class="tile-under" src="static/img/tiles/Front.png"></img>
+            <img 
+              class="tile" 
+              onclick="addTile('{{ (i+1)|string }}m')"
+              src="static/img/tiles/Man{{ (i + 1)|string }}.png" 
+              style="cursor: pointer;"
+            ></img>
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+
+    <table>
+      <tbody>
+        <tr>
+          {% for i in range (0, 9) %}
+          <td>
+            <img class="tile-under" src="static/img/tiles/Front.png"></img>
+            <img
+              class="tile"
+              onclick="addTile('{{ (i+1)|string }}p')"
+              src="static/img/tiles/Pin{{ (i + 1)|string }}.png"
+              style="cursor: pointer;"
+            ></img>
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+
+    <table>
+      <tbody>
+        <tr>
+          {% for i in range (0, 9) %}
+          <td>
+            <img class="tile-under" src="static/img/tiles/Front.png"></img>
+            <img
+              class="tile"
+              onclick="addTile('{{ (i+1)|string }}s')"
+              src="static/img/tiles/Sou{{ (i + 1)|string }}.png"
+              style="cursor: pointer;"
+            ></img>
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+
+    <table>
+      <tbody>
+        <tr>
+          {% for i in range (0, 7) %}
+          <td>
+            <img class="tile-under" src="static/img/tiles/Front.png"></img>
+            <img
+              class="tile"
+              onclick="addTile('{{ (i+1)|string }}z')"
+              src="static/img/tiles/Ji{{ (i + 1)|string }}.png"
+              style="cursor: pointer;"
+            ></img>
+          </td>
+          {% endfor %}
+          <td>
+            <img
+              class="tile"
+              src="static/img/tiles/Back.png"
+              onclick="removeTile()"
+            ></img>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br>
+
+    <input type="submit" value="Calculate Deal-in Rate">    
+  </form>
+
+  <script>
+    function addTile(tile) {
+      if (document.getElementById("discards").value.length < 40) {
+        document.getElementById("discards").value += tile;
+      }
+    }
+
+    function removeTile() {
+      const discardString = document.getElementById("discards").value;
+      const minusLastTile = discardString.substring(0, discardString.length - 2);
+
+      document.getElementById("discards").value = minusLastTile;
+    }
+  </script>
+</body>
+</html>

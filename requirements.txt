@@ -4,6 +4,7 @@ gunicorn==20.1.0
 itsdangerous==2.0.1
 Jinja2==3.0.1
 joblib==1.0.1
+lightgbm==3.2.1
 MarkupSafe==2.0.1
 numpy==1.21.0
 scikit-learn==0.24.2
