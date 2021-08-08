@@ -19,7 +19,7 @@ def stringify_tile(tile):
   return str(value) + str(suit)
 
 MODELS = [
-    lgb.Booster(model_file=f'./static/models/deal_in/2019_{stringify_tile(i)}.model')
+    lgb.Booster(model_file=f'./static/models/deal_in/full_{stringify_tile(i)}.model')
     for i in range(0, 34)
 ]
 
