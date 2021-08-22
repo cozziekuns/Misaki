@@ -10,12 +10,16 @@
   <h2>Deal-in Rate Calculator</h2>
 
   <form action="/calc_deal_in" method="get">
-    <div class="grid-align">
-      <label for="discards">Discard Pile</label>
-      <input type="text" id="discards" class="discards" name="discards" required maxlength="40" size="40">
-    </div>
-    
+    <label for="dora">Dora</label>
+    <input type="text" id="dora" class="dora" name="dora" required maxlength="2" size="2">
+
     <br>
+
+    <label for="discards">Discard Pile</label>
+    <input type="text" id="discards" class="discards" name="discards" required maxlength="63" size="63">
+    <input onclick="clearTiles()" type="button" value="Clear">    
+
+    <br><br>
 
     <table>
       <tbody>
@@ -98,21 +102,51 @@
 
     <br>
 
+    <input type="radio" id="tedashi" name="tedashi" value="Tedashi" checked>
+    <label for="tedashi">Tedashi</label>
+
+    <input type="radio" id="tsumogiri" name="tedashi" value="Tsumogiri">
+    <label for="tedashi">Tsumogiri</label><br><br>
+
+    <input type="checkbox" id="riichi" name="riichi" value="riichi">
+    <label for="riichi">Riichi</label>
+
+    <br><br>
+
     <input type="submit" value="Calculate Deal-in Rate">    
   </form>
 
   <script>
     function addTile(tile) {
-      if (document.getElementById("discards").value.length < 40) {
-        document.getElementById("discards").value += tile;
+      const tedashi = document.getElementById("tedashi").checked;
+      const riichi = document.getElementById("riichi").checked;
+
+      let modifier = (riichi ? 'r' : 't')
+      
+      if (tedashi) {
+          modifier = modifier.toUpperCase()
+      }
+
+      if (document.getElementById("discards").value.length < 63) {
+        document.getElementById("discards").value += tile + modifier;
+      }
+
+      if (riichi) {
+        document.getElementById("riichi").checked = false;
+        document.getElementById("tedashi").checked = false;
+        document.getElementById("tsumogiri").checked = true;
       }
     }
 
     function removeTile() {
       const discardString = document.getElementById("discards").value;
-      const minusLastTile = discardString.substring(0, discardString.length - 2);
+      const minusLastTile = discardString.substring(0, discardString.length - 3);
 
       document.getElementById("discards").value = minusLastTile;
+    }
+
+    function clearTiles() {
+      document.getElementById("discards").value = '';
     }
   </script>
 </body>

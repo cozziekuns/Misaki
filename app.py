@@ -35,15 +35,17 @@ def deal_in():
 
 @app.route("/calc_deal_in")
 def calc_deal_in():
+    dora_string = request.args['dora']
     discard_string = request.args['discards']
     
     deal_in_prob_strings = [
         f'{prob:.1%}'
-        for prob in get_deal_in_probs(discard_string)
+        for prob in get_deal_in_probs(dora_string, discard_string)
     ]
 
     return render_template(
         'deal_in_probs.html',
+        dora_string=dora_string,
         discard_string=discard_string,
         deal_in_probs=deal_in_prob_strings,
     )
