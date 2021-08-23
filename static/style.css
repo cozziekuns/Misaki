@@ -40,6 +40,14 @@ img.tile {
   width: 40px;
 }
 
+img.tsumogiri {
+  filter: grayscale(0.66) brightness(0.75); 
+}
+
+img.riichi {
+  transform: rotate(90deg);
+}
+
 img.tile-under {
   position: absolute;
   width: 40px;

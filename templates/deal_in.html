@@ -10,16 +10,48 @@
   <h2>Deal-in Rate Calculator</h2>
 
   <form action="/calc_deal_in" method="get">
+
     <label for="dora">Dora</label>
-    <input type="text" id="dora" class="dora" name="dora" required maxlength="2" size="2">
+    <input type="text" id="dora" class="dora" name="dora" required maxlength="2" size="2" value="1z">
+    
+    <h3>Discards</h3>
+
+    <input style="display: none" type="text" id="discards" class="discards" name="discards" required maxlength="63" size="63">
+
+    <table>
+      <tbody>
+        <tr>
+          {% for i in range(0, 6) %}
+          <td>
+            <img id="discard-back-{{ i|string }}" class="tile-under" src="static/img/tiles/Front.png"></img>
+            <img id="discard-{{ i|string }}" class="tile" src="static/img/tiles/Blank.png"></img>
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i in range(0, 6) %}
+          <td>
+            <img id="discard-back-{{ (i + 6)|string }}" class="tile-under" src="static/img/tiles/Front.png"></img>
+            <img id="discard-{{ (i + 6)|string }}" class="tile" src="static/img/tiles/Blank.png"></img>
+          </td>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for i in range(0, 9) %}
+          <td>
+            <img id="discard-back-{{ (i + 12)|string }}" class="tile-under" src="static/img/tiles/Front.png"></img>
+            <img id="discard-{{ (i + 12)|string }}" class="tile" src="static/img/tiles/Blank.png"></img>
+          </td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
 
     <br>
 
-    <label for="discards">Discard Pile</label>
-    <input type="text" id="discards" class="discards" name="discards" required maxlength="63" size="63">
     <input onclick="clearTiles()" type="button" value="Clear">    
 
-    <br><br>
+    <h3>Controls</h3>
 
     <table>
       <tbody>
@@ -116,38 +148,6 @@
     <input type="submit" value="Calculate Deal-in Rate">    
   </form>
 
-  <script>
-    function addTile(tile) {
-      const tedashi = document.getElementById("tedashi").checked;
-      const riichi = document.getElementById("riichi").checked;
-
-      let modifier = (riichi ? 'r' : 't')
-      
-      if (tedashi) {
-          modifier = modifier.toUpperCase()
-      }
-
-      if (document.getElementById("discards").value.length < 63) {
-        document.getElementById("discards").value += tile + modifier;
-      }
-
-      if (riichi) {
-        document.getElementById("riichi").checked = false;
-        document.getElementById("tedashi").checked = false;
-        document.getElementById("tsumogiri").checked = true;
-      }
-    }
-
-    function removeTile() {
-      const discardString = document.getElementById("discards").value;
-      const minusLastTile = discardString.substring(0, discardString.length - 3);
-
-      document.getElementById("discards").value = minusLastTile;
-    }
-
-    function clearTiles() {
-      document.getElementById("discards").value = '';
-    }
-  </script>
+  <script src="static/js/deal_in.js"></script>
 </body>
 </html>
