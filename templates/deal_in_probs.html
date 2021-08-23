@@ -8,14 +8,43 @@
 
 <body>
   <h2>Deal-in Rate Calculator</h2>
-  <h4>Inputs</h4>
+  <h3>Inputs</h3>
   <div>
     Dora: {{ dora_string }}
-    <br>
-    Discards: {{ discard_string }}
   </div>
 
-  <h4>Deal-in Probabilities</h4>
+  <h3>Discards</h3>
+
+  <table>
+    <tbody>
+      <tr>
+        {% for i in range(0, 6) %}
+        <td>
+          <img id="discard-back-{{ i|string }}" class="tile-under" src="static/img/tiles/Front.png"></img>
+          <img id="discard-{{ i|string }}" class="tile" src="static/img/tiles/Blank.png"></img>
+        </td>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for i in range(0, 6) %}
+        <td>
+          <img id="discard-back-{{ (i + 6)|string }}" class="tile-under" src="static/img/tiles/Front.png"></img>
+          <img id="discard-{{ (i + 6)|string }}" class="tile" src="static/img/tiles/Blank.png"></img>
+        </td>
+        {% endfor %}
+      </tr>
+      <tr>
+        {% for i in range(0, 9) %}
+        <td>
+          <img id="discard-back-{{ (i + 12)|string }}" class="tile-under" src="static/img/tiles/Front.png"></img>
+          <img id="discard-{{ (i + 12)|string }}" class="tile" src="static/img/tiles/Blank.png"></img>
+        </td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Deal-in Probabilities</h3>
 
   <table>
     <thead>
@@ -118,6 +147,10 @@
   <br>
 
   <input type="button" onclick="location.href='javascript:history.back()'" value="Back">
-
+  
+  <script src="static/js/deal_in_probs.js"></script>
+  <script>
+    refreshTileImages('{{ discard_string }}');
+  </script>
 </body>
 </html>
