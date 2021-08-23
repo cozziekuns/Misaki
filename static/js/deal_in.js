@@ -89,6 +89,3 @@ const clearTiles = () => {
   clearTileImages();
   refreshTileImages();
 }
-
-clearTileImages();
-refreshTileImages();
