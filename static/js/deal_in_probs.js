@@ -16,6 +16,7 @@ const refreshTileImages = (discardString) => {
     const discardImage = document.getElementById("discard-" + i.toString());
     const discardBackImage = document.getElementById("discard-back-" + i.toString());
 
+    discardBackImage.src = "static/img/tiles/Front.png";
     discardImage.src = "static/img/tiles/" + tileStringToFilename(tileString) + ".png";
 
     if (tileString[2] == 't' || tileString[2] == 'r') {

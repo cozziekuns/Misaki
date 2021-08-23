@@ -72,20 +72,29 @@ const addTile = (tile) => {
     tsumogiriButton.checked = true;
     riichiBox.checked = false;
   }
+
+  refreshTileImages();
 }
 
 const removeTile = () => {
   discardInput.value = discardInput.value.substring(0, discardInput.value.length - 3);
+  
+  clearTileImages();
+  refreshTileImages();
 }
 
 const clearTiles = () => {
   discardInput.value = '';
+  
+  clearTileImages();
 }
 
-setInterval(
-  function() {
-    clearTileImages();
-    refreshTileImages();
-  },
-  50,
-);
+// Jank to make sure the first render works.
+for (let i = 0; i < 5; i++) {
+  setTimeout(
+    refreshTileImages,
+    (i + 1) * 50,
+  );
+}
+
+
