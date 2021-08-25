@@ -38,6 +38,21 @@ def parse_tile(tile_string):
 
     return suit_offset + value + 1
 
+def get_dora_indicator(tile):
+    # Dora indicator for Haku is Chun.
+    if tile == 32:
+        return 34
+
+    # Dora indicator for East is North.
+    if tile == 28:
+        return 31
+
+    # Dora indicator for 1m, 1p, 1s is 9m, 9p, 9s
+    if (tile - 1) % 9 == 0:
+        return tile + 8
+
+    return tile - 1
+
 def parse_tile_with_modifier(tile_string):
     return parse_tile(tile_string[0:2]), MODIFIERS[tile_string[2]] 
 
@@ -48,7 +63,7 @@ def parse_discards_string(discards_string):
     ]
 
 def get_deal_in_probs(dora_string, discards_string):
-    dora = parse_tile(dora_string)
+    dora_indicator = get_dora_indicator(parse_tile(dora_string))
 
     discards = parse_discards_string(discards_string)
 
@@ -56,7 +71,7 @@ def get_deal_in_probs(dora_string, discards_string):
     packed_tedashi = [discard[1] % 2 + 1 for discard in discards] + [0] * (MAX_DISCARDS - len(discards))
     riichi_tile_index = next(i for i, v in enumerate(discards) if v[1] >= 2) + 1
 
-    input_vector = [dora] + packed_discards + packed_tedashi + [riichi_tile_index]
+    input_vector = [dora_indicator] + packed_discards + packed_tedashi + [riichi_tile_index]
 
     deal_in_probs = [
         MODELS[i].predict(np.array([input_vector]))[0] 
