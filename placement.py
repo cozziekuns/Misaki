@@ -1,6 +1,6 @@
 import numpy as np
 
-from xgboost import XGBClassifier
+import lightgbm as lgb
 
 #=============================================================================
 # ** Calculator_PlacementEv
@@ -16,8 +16,7 @@ class Calculator_PlacementEv:
     ]
     
     def __init__(self):
-        self.model = XGBClassifier()
-        self.model.load_model('./static/models/full.model')
+        self.model = lgb.Booster(model_file='./static/models/placement.model')
 
         self.kyoku = None
         self.scores = None
@@ -34,7 +33,7 @@ class Calculator_PlacementEv:
 
     def calc_prob_matrix(self):
         input_vector = [self.kyoku] + self.scores
-        probs = self.model.predict_proba(np.array([input_vector]))[0]
+        probs = self.model.predict(np.array([input_vector]))[0]
 
         totals = np.zeros((4, 4))
 
@@ -48,7 +47,4 @@ class Calculator_PlacementEv:
         if self.prob_matrix is None:
             raise Exception("Prob Matrix has not been set.")
 
-        return np.dot(self.prob_matrix[player_seat], self.payoff_matrix)
-
-    def calc_placement_ev(self, player_seat):
         return np.dot(self.prob_matrix[player_seat], self.payoff_matrix)
