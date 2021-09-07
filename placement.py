@@ -24,6 +24,14 @@ class Calculator_PlacementEv:
         self.payoff_matrix = None
         self.prob_matrix = None
 
+    def final_placements(self):
+        totals = np.zeros((4, 4))
+        
+        for i, v in enumerate(sorted(list(enumerate(self.scores)), key=lambda x: -x[1])):
+            totals[v[0]][i] = 1
+
+        return totals
+
     def refresh(self, kyoku, scores, payoff_matrix):
         self.kyoku = kyoku
         self.scores = scores
@@ -32,7 +40,10 @@ class Calculator_PlacementEv:
         self.payoff_matrix = payoff_matrix
 
     def calc_prob_matrix(self):
-        input_vector = [self.kyoku] + self.scores
+        if self.kyoku < 0:
+            return self.final_placements()
+
+        input_vector = [min(self.kyoku, 7)] + self.scores
         probs = self.model.predict(np.array([input_vector]))[0]
 
         totals = np.zeros((4, 4))

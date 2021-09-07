@@ -25,17 +25,41 @@ class Solver_Shoubu:
         self.result_odds_matrix = None
         self.result_payoff_matrix = None
 
-    def next_kyoku_matrix(self):
+    def get_next_kyoku(self, i):
+        if self.round_info.kyoku == 7:
+            return self.get_next_kyoku_all_last(i)
 
-        def get_next_kyoku(i):
-            if i in [0, 1, 4] and self.player_seat == self.round_info.kyoku % 4:
+        if (
+            (i in [0, 1, 4] and self.player_seat == self.round_info.kyoku % 4)
+            or (i in [2, 3, 4, 5] and self.opp_seat == self.round_info.kyoku % 4)
+        ):
+            return self.round_info.kyoku
+        else:
+            return self.round_info.kyoku + 1
+
+    def get_next_kyoku_all_last(self, i):
+        if (
+            (i in [0, 1, 4] and self.player_seat == 3) 
+            or (i in [2, 3, 4, 5] and self.opp_seat == 3)
+        ):
+            oya_score = self.result_matrix[i][3]
+
+            if (
+                oya_score >= 300
+                and max(self.result_matrix[i]) == oya_score
+                and self.result_matrix[i].count(oya_score) == 1
+            ):
+                return -1
+            else:
                 return self.round_info.kyoku
-            elif i in [2, 3, 4, 5] and self.opp_seat == self.round_info.kyoku % 4:
-                return self.round_info.kyoku
+        else:
+            if max(self.result_matrix[i]) >= 300:
+                return -1
             else:
                 return self.round_info.kyoku + 1
 
-        return [get_next_kyoku(i) for i in range(0, 6)]
+    def next_kyoku_matrix(self):
+        return [self.get_next_kyoku(i) for i in range(0, 6)]
 
     def shoubu_ev(self):
         shoubu_ev_matrix = list(map(mul, self.shoubu_matrix, self.result_payoff_matrix))

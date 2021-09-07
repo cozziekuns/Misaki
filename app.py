@@ -17,7 +17,10 @@ from solver import Solver_Shoubu
 #==============================================================================
 
 def format_kyoku(kyoku):
-    return ['East', 'South'][kyoku // 4] + ' ' + str(kyoku % 4 + 1)
+    if kyoku < 0:
+        return 'Game End'
+
+    return ['East', 'South', 'West'][kyoku // 4] + ' ' + str(kyoku % 4 + 1)
 
 #==============================================================================
 # ** Main Application
