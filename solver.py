@@ -61,6 +61,12 @@ class Solver_Shoubu:
     def next_kyoku_matrix(self):
         return [self.get_next_kyoku(i) for i in range(0, 6)]
 
+    def push_matrix(self, tenpai_deal_in):
+        push_matrix = list(map(lambda x: (1 - tenpai_deal_in) * x, self.shoubu_matrix))
+        push_matrix[2] += tenpai_deal_in
+
+        return push_matrix
+
     def shoubu_ev(self):
         shoubu_ev_matrix = list(map(mul, self.shoubu_matrix, self.result_payoff_matrix))
 

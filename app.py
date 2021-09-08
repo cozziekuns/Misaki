@@ -186,7 +186,7 @@ def shoubu_ev():
         result_diff_matrix=formatted_result_diff_matrix,
         result_odds_matrix=formatted_result_odds_matrix,
         result_payoff_matrix=formatted_result_payoff_matrix,
-        shoubu_odds=[f"{prob:.2%}" for prob in solver.shoubu_matrix],
+        shoubu_odds=[f"{prob:.2%}" for prob in solver.push_matrix(tenpai_deal_in)],
         fold_odds=[f"{prob:.2%}" for prob in solver.fold_matrix],
         push_ev=f"{solver.push_ev(tenpai_deal_in):.4f}",
         shoubu_ev=f"{solver.shoubu_ev():.4f}",
