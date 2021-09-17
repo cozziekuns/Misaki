@@ -112,8 +112,8 @@ def shoubu_ev():
         [
             (player_tsumo_han, player_tsumo_fu),
             (player_ron_han, player_ron_fu),
-            (opp_tsumo_han, opp_tsumo_fu),
             (opp_ron_han, opp_ron_fu),
+            (opp_tsumo_han, opp_tsumo_fu),
         ]
     )
 
