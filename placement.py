@@ -15,7 +15,7 @@ class Calculator_PlacementEv:
         [3, 0, 1, 2], [3, 0, 2, 1], [3, 1, 0, 2], [3, 1, 2, 0], [3, 2, 0, 1], [3, 2, 1, 0],
     ]
     
-    def __init__(self):
+    def __init__(self, use_uma=False):
         self.model = lgb.Booster(model_file='./static/models/placement.model')
 
         self.kyoku = None
@@ -23,6 +23,8 @@ class Calculator_PlacementEv:
 
         self.payoff_matrix = None
         self.prob_matrix = None
+        
+        self.use_uma = use_uma
 
     def final_placements(self):
         totals = np.zeros((4, 4))
@@ -58,4 +60,9 @@ class Calculator_PlacementEv:
         if self.prob_matrix is None:
             raise Exception("Prob Matrix has not been set.")
 
-        return np.dot(self.prob_matrix[player_seat], self.payoff_matrix)
+        result = np.dot(self.prob_matrix[player_seat], self.payoff_matrix)
+
+        if self.use_uma:
+            result += self.scores[player_seat] / 10 - 25
+
+        return result

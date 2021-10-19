@@ -9,8 +9,15 @@ from placement import Calculator_PlacementEv
 
 class Solver_Shoubu:
 
-    def __init__(self, round_info, player_seat, opp_seat, payoff_matrix):
-        self.placement_ev_calculator = Calculator_PlacementEv()
+    def __init__(
+        self,
+        round_info,
+        player_seat,
+        opp_seat,
+        payoff_matrix,
+        use_uma=False,
+    ):
+        self.placement_ev_calculator = Calculator_PlacementEv(use_uma=use_uma)
 
         self.round_info = round_info
 

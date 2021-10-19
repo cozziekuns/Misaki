@@ -106,8 +106,10 @@ def shoubu_ev():
     # --- Get Payoff Matrix ---
 
     payoff_matrix = [int(request.args[name + '_place_bonus']) for name in placement_names]
+    
+    use_uma = request.args['bonus_type'] == 'uma_bonus'
 
-    solver = Solver_Shoubu(round_info, real_player_seat, real_opp_seat, payoff_matrix)
+    solver = Solver_Shoubu(round_info, real_player_seat, real_opp_seat, payoff_matrix, use_uma=use_uma)
     solver.refresh_result_matrix(
         [
             (player_tsumo_han, player_tsumo_fu),
@@ -214,7 +216,9 @@ def placement_ev():
 
     payoff_matrix = [int(request.args[name + '_place_bonus']) for name in placement_names]
 
-    calculator = Calculator_PlacementEv()
+    use_uma = request.args['bonus_type'] == 'uma_bonus'
+
+    calculator = Calculator_PlacementEv(use_uma=use_uma)
     calculator.refresh(kyoku, real_scores, payoff_matrix)
 
     placement_ev = calculator.calc_placement_ev(new_player_seat)
