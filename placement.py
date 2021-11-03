@@ -16,7 +16,10 @@ class Calculator_PlacementEv:
     ]
     
     def __init__(self, use_uma=False):
-        self.model = lgb.Booster(model_file='./static/models/placement.model')
+        self.models = [
+            lgb.Booster(model_file=f"./static/models/placement/full_{i}.model")
+            for i in range(0, 8)
+        ]
 
         self.kyoku = None
         self.scores = None
@@ -44,9 +47,9 @@ class Calculator_PlacementEv:
     def calc_prob_matrix(self):
         if self.kyoku < 0:
             return self.final_placements()
-
-        input_vector = [min(self.kyoku, 7)] + self.scores
-        probs = self.model.predict(np.array([input_vector]))[0]
+        
+        model = self.models[min(self.kyoku, 7)]
+        probs = model.predict(np.array([self.scores]))[0]
 
         totals = np.zeros((4, 4))
 
