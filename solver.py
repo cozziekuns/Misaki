@@ -36,6 +36,11 @@ class Solver_Shoubu:
         if self.round_info.kyoku == 7:
             return self.get_next_kyoku_all_last(i)
 
+        negative_scores = [score for score in self.result_matrix[i] if score < 0]
+
+        if negative_scores:
+            return -1
+
         if (
             (i in [0, 1, 4] and self.player_seat == self.round_info.kyoku % 4)
             or (i in [2, 3, 4, 5] and self.opp_seat == self.round_info.kyoku % 4)
