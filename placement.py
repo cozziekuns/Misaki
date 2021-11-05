@@ -47,7 +47,7 @@ class Calculator_PlacementEv:
     def calc_prob_matrix(self):
         if self.kyoku < 0:
             return self.final_placements()
-        
+
         model = self.models[min(self.kyoku, 7)]
         probs = model.predict(np.array([self.scores]))[0]
 
