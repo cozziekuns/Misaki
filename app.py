@@ -75,7 +75,7 @@ def shoubu_ev():
 
     for i in range(0, 4):
         real_index = (i + (kyoku % 4)) % 4
-        real_scores[real_index] = scores[i] // 100
+        real_scores[real_index] = scores[i]
 
     round_info = Game_RoundInfo(kyoku, riichi_sticks, homba, real_scores)
 
@@ -212,7 +212,7 @@ def placement_ev():
 
     for i in range(0, 4):
         new_index = (i + (kyoku % 4)) % 4
-        real_scores[new_index] = scores[i] // 100
+        real_scores[new_index] = scores[i]
 
     payoff_matrix = [int(request.args[name + '_place_bonus']) for name in placement_names]
 
