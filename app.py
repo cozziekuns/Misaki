@@ -125,6 +125,8 @@ def shoubu_ev():
 
     solver.placement_ev_calculator.refresh(
         kyoku=kyoku,
+        homba=homba,
+        riibou=riichi_sticks,
         scores=real_scores,
         payoff_matrix=payoff_matrix,
     )
@@ -204,6 +206,9 @@ def placement_ev():
     placement_names = ['first', 'second', 'third', 'fourth']
 
     kyoku = int(request.args['kyoku'])
+    homba = int(request.args['homba'])
+    riibou = int(request.args['riibou'])
+
     player_seat = int(request.args['player_seat'])
     new_player_seat = (player_seat + (kyoku % 4)) % 4
 
@@ -219,7 +224,7 @@ def placement_ev():
     use_uma = request.args['bonus_type'] == 'uma_bonus'
 
     calculator = Calculator_PlacementEv(use_uma=use_uma)
-    calculator.refresh(kyoku, real_scores, payoff_matrix)
+    calculator.refresh(kyoku, homba, riibou, real_scores, payoff_matrix)
 
     placement_ev = calculator.calc_placement_ev(new_player_seat)
 

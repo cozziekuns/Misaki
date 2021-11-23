@@ -22,6 +22,9 @@ class Calculator_PlacementEv:
         ]
 
         self.kyoku = None
+        self.homba = None
+        self.riibou = None
+
         self.scores = None
 
         self.payoff_matrix = None
@@ -37,8 +40,11 @@ class Calculator_PlacementEv:
 
         return totals
 
-    def refresh(self, kyoku, scores, payoff_matrix):
+    def refresh(self, kyoku, homba, riibou, scores, payoff_matrix):
         self.kyoku = kyoku
+        self.homba = homba
+        self.riibou = riibou
+
         self.scores = scores
 
         self.prob_matrix = self.calc_prob_matrix()
@@ -48,8 +54,10 @@ class Calculator_PlacementEv:
         if self.kyoku < 0:
             return self.final_placements()
 
+        input_vector = self.scores + [self.homba, self.riibou]
+        
         model = self.models[min(self.kyoku, 7)]
-        probs = model.predict(np.array([self.scores]))[0]
+        probs = model.predict(np.array([input_vector]))[0]
 
         totals = np.zeros((4, 4))
 

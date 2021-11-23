@@ -73,6 +73,20 @@ class Solver_Shoubu:
     def next_kyoku_matrix(self):
         return [self.get_next_kyoku(i) for i in range(0, 6)]
 
+    def get_next_bonus(self, i):
+        is_player_oya = (self.player_seat == self.round_info.kyoku % 4)
+        is_opp_oya = (self.opp_seat == self.round_info.kyoku % 4)
+
+        if i in [4, 5]:
+            return [self.round_info.homba + 1, self.round_info.riichi_sticks]
+        elif (i in [0, 1] and is_player_oya) or (i in [2, 3] and is_opp_oya):
+            return [self.round_info.homba + 1, 0]
+        else:
+            return [0, 0]
+
+    def next_bonus_matrix(self):
+        return [self.get_next_bonus(i) for i in range(0, 6)]
+
     def push_matrix(self, tenpai_deal_in):
         push_matrix = list(map(lambda x: (1 - tenpai_deal_in) * x, self.shoubu_matrix))
         push_matrix[2] += tenpai_deal_in
@@ -174,10 +188,13 @@ class Solver_Shoubu:
         self.result_odds_matrix = []
 
         kyoku_matrix = self.next_kyoku_matrix()
+        bonus_matrix = self.next_bonus_matrix()
 
         for i in range(0, 6):
             self.placement_ev_calculator.refresh(
                 kyoku=kyoku_matrix[i],
+                homba=bonus_matrix[i][0],
+                riibou=bonus_matrix[i][1],
                 scores=self.result_matrix[i],
                 payoff_matrix=self.payoff_matrix,
             )
