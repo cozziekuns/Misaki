@@ -10,7 +10,22 @@ from flask import url_for
 from deal_in import get_deal_in_probs
 from game import Game_RoundInfo
 from placement import Calculator_PlacementEv
+from solver import Solver_DealIn
+from solver import Solver_Fold
 from solver import Solver_Shoubu
+
+WIND_NAMES = ['east', 'south', 'west', 'north']
+SEAT_NAMES = ['East', 'South', 'West', 'North']
+PLACEMENT_NAMES = ['first', 'second', 'third', 'fourth']
+
+SHOUBU_SECTION_TITLES = [
+    'Player Tsumo Result',
+    'Player Ron Result',
+    'Opponent Ron Result',
+    'Opponent Tsumo Result',
+    'Player Tenpai Ryuukyoku Result',
+    'Player Noten Ryuukyoku Result',
+]
 
 #==============================================================================
 # ** Utility
@@ -20,7 +35,54 @@ def format_kyoku(kyoku):
     if kyoku < 0:
         return 'Game End'
 
-    return ['East', 'South', 'West'][kyoku // 4] + ' ' + str(kyoku % 4 + 1)
+    return SEAT_NAMES[kyoku // 4] + ' ' + str(kyoku % 4 + 1)
+
+def get_shoubu_base_round_info(request):
+    kyoku = int(request.args['kyoku'])
+    riichi_sticks = int(request.args['riichi_sticks'])
+    homba = int(request.args['homba'])
+    scores = [int(request.args[wind + '_player_score']) for wind in WIND_NAMES]
+    
+    real_scores = [0, 0, 0, 0]
+
+    for seat in range(0, 4):
+        real_index = (seat + (kyoku % 4)) % 4
+        real_scores[real_index] = scores[seat]
+
+    return Game_RoundInfo(kyoku, homba, riichi_sticks, real_scores)
+
+def get_shoubu_round_info(request, player_seat):
+    round_info = get_shoubu_base_round_info(request)
+
+    if request.args.get('declare_riichi') == 'riichi':
+        round_info.riichi_sticks += 1
+        round_info.scores[player_seat] -= 10
+
+    return round_info
+
+def get_shoubu_agari_value_matrix(request):
+    player_tsumo_han = int(request.args['player_tsumo_han'])
+    player_tsumo_fu = int(request.args['player_tsumo_fu'])
+    player_ron_han = int(request.args['player_ron_han'])
+    player_ron_fu = int(request.args['player_ron_fu'])
+
+    opp_tsumo_han = int(request.args['opp_tsumo_han'])
+    opp_tsumo_fu = int(request.args['opp_tsumo_fu'])
+    opp_ron_han = int(request.args['opp_ron_han'])
+    opp_ron_fu = int(request.args['opp_ron_fu'])
+
+    return [
+        (player_tsumo_han, player_tsumo_fu),
+        (player_ron_han, player_ron_fu),
+        (opp_ron_han, opp_ron_fu),
+        (opp_tsumo_han, opp_tsumo_fu),
+    ]
+
+def get_shoubu_calculator(request):
+    payoff_matrix = [int(request.args[name + '_place_bonus']) for name in PLACEMENT_NAMES]
+    use_uma = request.args['bonus_type'] == 'uma_bonus'
+    
+    return Calculator_PlacementEv(payoff_matrix, use_uma=use_uma)
 
 #==============================================================================
 # ** Main Application
@@ -58,98 +120,59 @@ def shoubu():
     return render_template('shoubu.html')
 
 @app.route("/shoubu_ev")
-def shoubu_ev():
-    winds = ['east', 'south', 'west', 'north']
-    placement_names = ['first', 'second', 'third', 'fourth']
-
-    # --- Get Round Info ---
-
-    kyoku = int(request.args['kyoku'])
-
-    riichi_sticks = int(request.args['riichi_sticks'])
-    homba = int(request.args['homba'])
-
-    scores = [int(request.args[wind + '_player_score']) for wind in winds]
+def shoubu_ev(): 
+    base_round_info = get_shoubu_base_round_info(request)
     
-    real_scores = [0, 0, 0, 0]
-
-    for i in range(0, 4):
-        real_index = (i + (kyoku % 4)) % 4
-        real_scores[real_index] = scores[i]
-
-    round_info = Game_RoundInfo(kyoku, riichi_sticks, homba, real_scores)
-
-    # --- Get Shoubu Info ---
-
     tenpai_deal_in = int(request.args['tenpai_deal_in']) / 100
     live_wall = int(request.args['tiles_live_wall'])
 
     player_seat = int(request.args['player_seat'])
     opp_seat = int(request.args['opp_seat'])
 
-    real_player_seat = (player_seat + (kyoku % 4)) % 4
-    real_opp_seat = (opp_seat + (kyoku % 4)) % 4
+    real_player_seat = (player_seat + (base_round_info.kyoku % 4)) % 4
+    real_opp_seat = (opp_seat + (base_round_info.kyoku % 4)) % 4
 
     player_waits = int(request.args['player_waits'])
     opp_waits = int(request.args['opp_waits'])
 
-    player_tsumo_han = int(request.args['player_tsumo_han'])
-    player_tsumo_fu = int(request.args['player_tsumo_fu'])
-    player_ron_han = int(request.args['player_ron_han'])
-    player_ron_fu = int(request.args['player_ron_fu'])
+    shoubu_round_info = get_shoubu_round_info(request, real_player_seat)
 
-    opp_tsumo_han = int(request.args['opp_tsumo_han'])
-    opp_tsumo_fu = int(request.args['opp_tsumo_fu'])
-    opp_ron_han = int(request.args['opp_ron_han'])
-    opp_ron_fu = int(request.args['opp_ron_fu'])
-
-    # --- Get Payoff Matrix ---
-
-    payoff_matrix = [int(request.args[name + '_place_bonus']) for name in placement_names]
+    agari_value_matrix = get_shoubu_agari_value_matrix(request)
     
-    use_uma = request.args['bonus_type'] == 'uma_bonus'
+    calculator = get_shoubu_calculator(request)
 
-    solver = Solver_Shoubu(round_info, real_player_seat, real_opp_seat, payoff_matrix, use_uma=use_uma)
-    solver.refresh_result_matrix(
-        [
-            (player_tsumo_han, player_tsumo_fu),
-            (player_ron_han, player_ron_fu),
-            (opp_ron_han, opp_ron_fu),
-            (opp_tsumo_han, opp_tsumo_fu),
-        ]
-    )
+    shoubu_solver = Solver_Shoubu(calculator, shoubu_round_info, real_player_seat, real_opp_seat, agari_value_matrix)
+    shoubu_solver.solve(live_wall, player_waits, opp_waits)
 
-    solver.solve(live_wall, player_waits, opp_waits)
+    fold_solver = Solver_Fold(calculator, base_round_info, real_player_seat, real_opp_seat, agari_value_matrix)
+    fold_solver.solve(live_wall, opp_waits)
 
-    # --- Get Current Placement EV ---
+    deal_in_solver = Solver_DealIn(calculator, base_round_info, real_player_seat, real_opp_seat, agari_value_matrix)
+    deal_in_solver.solve()
 
-    solver.placement_ev_calculator.refresh(
-        kyoku=kyoku,
-        homba=homba,
-        riibou=riichi_sticks,
-        scores=real_scores,
-        payoff_matrix=payoff_matrix,
-    )
+    push_matrix = list(map(lambda outcome_chance: (1 - tenpai_deal_in) * outcome_chance, shoubu_solver.outcome_matrix))
+    push_matrix[2] += tenpai_deal_in
 
-    curr_odds_matrix = solver.placement_ev_calculator.prob_matrix[real_player_seat]
-    curr_placement_ev = solver.placement_ev_calculator.calc_placement_ev(real_player_seat)
+    push_ev = tenpai_deal_in * deal_in_solver.ev() + (1 - tenpai_deal_in) * shoubu_solver.ev()
+    threshold = (fold_solver.ev() - shoubu_solver.ev()) / (deal_in_solver.ev() - shoubu_solver.ev())
 
-    # --- Format for frontend ---
+    calculator.refresh(base_round_info)
 
-    next_kyoku_matrix = solver.next_kyoku_matrix()
+    curr_odds_matrix = calculator.prob_matrix[real_player_seat]
+    curr_placement_ev = calculator.calc_placement_ev(real_player_seat)
 
     formatted_result_matrix = []
     formatted_result_diff_matrix = []
 
     for i in range(0, 6):
-        result = [score for score in solver.result_matrix[i]]
-        result_diff = list(map(sub, result, real_scores))
+        result = [score for score in shoubu_solver.result_matrix[i]]
+        result_diff = list(map(sub, result, shoubu_round_info.scores))
 
         final_matrix = [0, 0, 0, 0]
         final_diff_matrix = [0, 0, 0, 0]
 
         for j in range(0, 4):
-            new_index = (j - (next_kyoku_matrix[i] % 4)) % 4
+            new_index = (j - (shoubu_solver.get_next_kyoku(i) % 4)) % 4
 
             final_matrix[new_index] = result[j] * 100
             final_diff_matrix[new_index] = f"+{result_diff[j] * 100}" if result_diff[j] > 0 else str(result_diff[j] * 100)
@@ -157,78 +180,57 @@ def shoubu_ev():
         formatted_result_matrix.append(final_matrix)
         formatted_result_diff_matrix.append(final_diff_matrix)
 
-    formatted_result_payoff_matrix = [f"{result:.4f}" for result in solver.result_payoff_matrix]
+    formatted_result_payoff_matrix = [f"{result:.4f}" for result in shoubu_solver.outcome_placement_ev_matrix]
     formatted_result_odds_matrix = [
         [[f"{prob:.2%}" for prob in placements] for placements in matrix] 
-        for matrix in solver.result_odds_matrix
-    ]
-
-    section_titles = [
-        'Player Tsumo Result',
-        'Player Ron Result',
-        'Opponent Ron Result',
-        'Opponent Tsumo Result',
-        'Player Tenpai Ryuukyoku Result',
-        'Player Noten Ryuukyoku Result'
+        for matrix in shoubu_solver.outcome_placement_odds_matrix
     ]
 
     return render_template(
         'shoubu_ev.html',
-        section_titles=section_titles,
+        section_titles=SHOUBU_SECTION_TITLES,
         real_player_seat=real_player_seat,
-        kyoku=format_kyoku(kyoku),
-        riichi_sticks=riichi_sticks,
-        homba=homba,
-        curr_scores=scores,
-        formatted_player_seat=['East', 'South', 'West', 'North'][player_seat],
-        formatted_opp_seat=['East', 'South', 'West', 'North'][opp_seat],
-        payoff_matrix=payoff_matrix,
+        kyoku=format_kyoku(base_round_info.kyoku),
+        riichi_sticks=base_round_info.riichi_sticks,
+        homba=base_round_info.homba,
+        curr_scores=[int(request.args[wind + '_player_score']) for wind in WIND_NAMES],
+        formatted_player_seat=SEAT_NAMES[player_seat],
+        formatted_opp_seat=SEAT_NAMES[opp_seat],
+        payoff_matrix=calculator.payoff_matrix,
         curr_odds_matrix=[f"{prob:.2%}"for prob in curr_odds_matrix],
         curr_placement_ev=f"{curr_placement_ev:.4f}",
-        next_kyoku_matrix=[format_kyoku(kyoku) for kyoku in next_kyoku_matrix],
+        next_kyoku_matrix=[format_kyoku(shoubu_solver.get_next_kyoku(i)) for i in range(0, 6)],
         result_matrix=formatted_result_matrix,
         result_diff_matrix=formatted_result_diff_matrix,
         result_odds_matrix=formatted_result_odds_matrix,
         result_payoff_matrix=formatted_result_payoff_matrix,
-        shoubu_odds=[f"{prob:.2%}" for prob in solver.push_matrix(tenpai_deal_in)],
-        fold_odds=[f"{prob:.2%}" for prob in solver.fold_matrix],
-        push_ev=f"{solver.push_ev(tenpai_deal_in):.4f}",
-        shoubu_ev=f"{solver.shoubu_ev():.4f}",
-        deal_in_ev=formatted_result_payoff_matrix[2],
-        fold_ev=f"{solver.fold_ev():.4f}",
-        threshold=f"{solver.threshold():.2%}",
+        shoubu_odds=[f"{prob:.2%}" for prob in shoubu_solver.outcome_matrix],
+        fold_odds=[f"{prob:.2%}" for prob in fold_solver.outcome_matrix],
+        push_ev=f"{push_ev:.4f}",
+        shoubu_ev=f"{shoubu_solver.ev():.4f}",
+        deal_in_ev=f"{deal_in_solver.ev():.4f}",
+        fold_ev=f"{fold_solver.ev():.4f}",
+        threshold=f"{threshold:.2%}",
         tenpai_deal_in=int(tenpai_deal_in * 100),
     )
 
 @app.route("/placement_ev")
 def placement_ev():
-    winds = ['east', 'south', 'west', 'north']
-    placement_names = ['first', 'second', 'third', 'fourth']
-
-    kyoku = int(request.args['kyoku'])
-    homba = int(request.args['homba'])
-    riibou = int(request.args['riibou'])
-
+    round_info = get_shoubu_base_round_info(request)
+    
     player_seat = int(request.args['player_seat'])
-    new_player_seat = (player_seat + (kyoku % 4)) % 4
+    new_player_seat = (player_seat + (round_info.kyoku % 4)) % 4
 
-    scores = [int(request.args[wind + '_player_score']) for wind in winds]
-    real_scores = [0, 0, 0, 0]
+    payoff_matrix = [int(request.args[name + '_place_bonus']) for name in PLACEMENT_NAMES]
 
-    for i in range(0, 4):
-        new_index = (i + (kyoku % 4)) % 4
-        real_scores[new_index] = scores[i]
+    calculator = Calculator_PlacementEv(
+        payoff_matrix,
+        use_uma=request.args['bonus_type'] == 'uma_bonus',
+    )
 
-    payoff_matrix = [int(request.args[name + '_place_bonus']) for name in placement_names]
-
-    use_uma = request.args['bonus_type'] == 'uma_bonus'
-
-    calculator = Calculator_PlacementEv(use_uma=use_uma)
-    calculator.refresh(kyoku, homba, riibou, real_scores, payoff_matrix)
-
+    calculator.refresh(round_info)
     placement_ev = calculator.calc_placement_ev(new_player_seat)
 
-    formatted_ev = f"{placement_ev:.4f}"
     formatted_matrix = list(
         map(
             lambda placements: list(map(lambda prob: f"{prob:.2%}", placements)),
@@ -240,18 +242,16 @@ def placement_ev():
     final_matrix = [None] * 4
 
     for i in range(0, 4):
-        new_index = (i - (kyoku % 4)) % 4
+        new_index = (i - (round_info.kyoku % 4)) % 4
         final_matrix[new_index] = formatted_matrix[i]
-
-    formatted_kyoku = ['East', 'South'][kyoku // 4] + ' ' + str(kyoku % 4 + 1)
 
     return render_template(
         'placement_ev.html',
-        kyoku=formatted_kyoku,
-        scores=scores,
+        kyoku=format_kyoku(round_info.kyoku),
+        scores=round_info.scores,
         payoff=payoff_matrix,
         player_index=player_seat,
-        ev=formatted_ev,
+        ev=f"{placement_ev:.4f}",
         matrix=final_matrix,
     )
 

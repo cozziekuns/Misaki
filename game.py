@@ -6,11 +6,11 @@ import math
 
 class Game_RoundInfo:
 
-    def __init__(self, kyoku, riichi_sticks, homba, scores):
+    def __init__(self, kyoku, homba, riichi_sticks, scores):
         self.kyoku = kyoku
 
-        self.riichi_sticks = riichi_sticks
         self.homba = homba
+        self.riichi_sticks = riichi_sticks
 
         self.scores = scores
 

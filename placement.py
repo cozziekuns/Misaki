@@ -15,7 +15,7 @@ class Calculator_PlacementEv:
         [3, 0, 1, 2], [3, 0, 2, 1], [3, 1, 0, 2], [3, 1, 2, 0], [3, 2, 0, 1], [3, 2, 1, 0],
     ]
     
-    def __init__(self, use_uma=False):
+    def __init__(self, payoff_matrix, use_uma=False):
         self.models = [
             lgb.Booster(model_file=f"./static/models/placement/full_{i}.model")
             for i in range(0, 8)
@@ -27,7 +27,7 @@ class Calculator_PlacementEv:
 
         self.scores = None
 
-        self.payoff_matrix = None
+        self.payoff_matrix = payoff_matrix
         self.prob_matrix = None
         
         self.use_uma = use_uma
@@ -40,15 +40,13 @@ class Calculator_PlacementEv:
 
         return totals
 
-    def refresh(self, kyoku, homba, riibou, scores, payoff_matrix):
-        self.kyoku = kyoku
-        self.homba = homba
-        self.riibou = riibou
-
-        self.scores = scores
+    def refresh(self, round_info):
+        self.kyoku = round_info.kyoku
+        self.homba = round_info.homba
+        self.riibou = round_info.riichi_sticks
+        self.scores = round_info.scores
 
         self.prob_matrix = self.calc_prob_matrix()
-        self.payoff_matrix = payoff_matrix
 
     def calc_prob_matrix(self):
         if self.kyoku < 0:
