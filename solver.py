@@ -56,7 +56,7 @@ class Solver_Base:
             return -1
         
         if self.round_info.kyoku == 7:
-            return self.get_next_kyoku_all_last(i)
+            return self.get_next_kyoku_all_last(outcome_index)
 
         if self.is_outcome_renchan(outcome_index):
             return self.round_info.kyoku
