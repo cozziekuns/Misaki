@@ -37,12 +37,15 @@ def format_kyoku(kyoku):
 
     return SEAT_NAMES[kyoku // 4] + ' ' + str(kyoku % 4 + 1)
 
+def get_base_scores_from_request(request):
+    return [int(request.args[wind + '_player_score']) for wind in WIND_NAMES]
+
 def get_shoubu_base_round_info(request):
     kyoku = int(request.args['kyoku'])
     riichi_sticks = int(request.args['riichi_sticks'])
     homba = int(request.args['homba'])
-    scores = [int(request.args[wind + '_player_score']) for wind in WIND_NAMES]
-    
+    scores = get_base_scores_from_request    
+
     real_scores = [0, 0, 0, 0]
 
     for seat in range(0, 4):
@@ -193,7 +196,7 @@ def shoubu_ev():
         kyoku=format_kyoku(base_round_info.kyoku),
         riichi_sticks=base_round_info.riichi_sticks,
         homba=base_round_info.homba,
-        curr_scores=[int(request.args[wind + '_player_score']) for wind in WIND_NAMES],
+        curr_scores=get_base_scores_from_request(request),
         formatted_player_seat=SEAT_NAMES[player_seat],
         formatted_opp_seat=SEAT_NAMES[opp_seat],
         payoff_matrix=calculator.payoff_matrix,
@@ -248,7 +251,7 @@ def placement_ev():
     return render_template(
         'placement_ev.html',
         kyoku=format_kyoku(round_info.kyoku),
-        scores=round_info.scores,
+        scores=get_base_scores_from_request(request),
         payoff=payoff_matrix,
         player_index=player_seat,
         ev=f"{placement_ev:.4f}",
