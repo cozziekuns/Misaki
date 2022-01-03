@@ -97,6 +97,10 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route("/placement")
+def placement():
+    return render_template('placement.html')
+
 @app.route("/deal_in")
 def deal_in():
     return render_template('deal_in.html')

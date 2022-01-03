@@ -306,3 +306,39 @@ class Solver_DealIn(Solver_Base):
             else:
                 self.outcome_placement_odds_matrix.append([0, 0, 0, 0])
                 self.outcome_placement_ev_matrix.append(0)
+
+
+#=============================================================================
+# ** Solver_Agari
+#=============================================================================
+
+class Solver_Agari(Solver_Base):
+
+    def refresh_result_matrix(self, tsumo=False):
+        agari_result = Game_Agari(
+            actor=self.player_seat,
+            target=self.player_seat if tsumo else self.opp_seat,
+            han=self.agari_value_matrix[0][0] if tsumo else self.agari_value_matrix[1][0],
+            fu=self.agari_value_matrix[0][1] if tsumo else self.agari_value_matrix[1][1],
+        ).resolve(self.round_info)
+
+        agari_index = 0 if tsumo else 1
+
+        self.result_matrix = [0, 0, 0, 0, 0, 0]
+        self.result_matrix[agari_index] += agari_result
+
+    def solve(self):
+        self.outcome_matrix = [0, 0, 1, 0, 0, 0]
+
+        self.outcome_placement_ev_matrix = []
+        self.outcome_placement_odds_matrix = []
+
+        for outcome_index in range(0, 6):
+            if outcome_index == 2:
+                self.calculator.refresh(self.get_next_round_info(outcome_index))
+
+                self.outcome_placement_odds_matrix.append(self.calculator.prob_matrix)
+                self.outcome_placement_ev_matrix.append(self.calculator.calc_placement_ev(self.player_seat))
+            else:
+                self.outcome_placement_odds_matrix.append([0, 0, 0, 0])
+                self.outcome_placement_ev_matrix.append(0)
