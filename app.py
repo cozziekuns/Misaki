@@ -44,7 +44,7 @@ def get_shoubu_base_round_info(request):
     kyoku = int(request.args['kyoku'])
     riichi_sticks = int(request.args['riichi_sticks'])
     homba = int(request.args['homba'])
-    scores = get_base_scores_from_request    
+    scores = get_base_scores_from_request(request)   
 
     real_scores = [0, 0, 0, 0]
 
