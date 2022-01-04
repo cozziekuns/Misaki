@@ -10,6 +10,7 @@ from flask import url_for
 from deal_in import get_deal_in_probs
 from game import Game_RoundInfo
 from placement import Calculator_PlacementEv
+from solver import Solver_Agari
 from solver import Solver_DealIn
 from solver import Solver_Fold
 from solver import Solver_Shoubu
@@ -63,6 +64,19 @@ def get_shoubu_round_info(request, player_seat):
 
     return round_info
 
+
+def get_one_vs_all_agari_value_matrix(request):
+    player_tsumo_han = int(request.args['player_tsumo_han'])
+    player_tsumo_fu = int(request.args['player_tsumo_fu'])
+    player_ron_han = int(request.args['player_ron_han'])
+    player_ron_fu = int(request.args['player_ron_fu'])
+
+    return [
+        (player_tsumo_han, player_tsumo_fu),
+        (player_ron_han, player_ron_fu),
+    ]
+
+
 def get_shoubu_agari_value_matrix(request):
     player_tsumo_han = int(request.args['player_tsumo_han'])
     player_tsumo_fu = int(request.args['player_tsumo_fu'])
@@ -81,7 +95,7 @@ def get_shoubu_agari_value_matrix(request):
         (opp_tsumo_han, opp_tsumo_fu),
     ]
 
-def get_shoubu_calculator(request):
+def get_ev_calculator(request):
     payoff_matrix = [int(request.args[name + '_place_bonus']) for name in PLACEMENT_NAMES]
     use_uma = request.args['bonus_type'] == 'uma_bonus'
     
@@ -100,6 +114,31 @@ def index():
 @app.route("/placement")
 def placement():
     return render_template('placement.html')
+
+@app.route("/one_vs_all")
+def one_vs_all():
+    return render_template('one_vs_all.html')
+
+@app.route("/calc_one_vs_all")
+def calc_one_vs_all():
+    base_round_info = get_shoubu_base_round_info(request)
+    
+    player_seat = int(request.args['player_seat'])
+    real_player_seat = (player_seat + (base_round_info.kyoku % 4)) % 4
+
+    agari_value_matrix = get_one_vs_all_agari_value_matrix(request)
+    
+    calculator = get_ev_calculator(request)
+
+    agari_solvers = [
+        Solver_Agari(calculator, base_round_info, real_player_seat, opp_seat % 4, agari_value_matrix)
+        for opp_seat in range(real_player_seat, real_player_seat + 4)
+    ]
+
+    for solver in agari_solvers:
+        solver.solve()
+    
+    return "<br>".join([f"{solver.ev():.4f}" for solver in agari_solvers])
 
 @app.route("/deal_in")
 def deal_in():
@@ -146,7 +185,7 @@ def shoubu_ev():
 
     agari_value_matrix = get_shoubu_agari_value_matrix(request)
     
-    calculator = get_shoubu_calculator(request)
+    calculator = get_ev_calculator(request)
 
     shoubu_solver = Solver_Shoubu(calculator, shoubu_round_info, real_player_seat, real_opp_seat, agari_value_matrix)
     shoubu_solver.solve(live_wall, player_waits, opp_waits)
@@ -228,14 +267,9 @@ def placement_ev():
     player_seat = int(request.args['player_seat'])
     new_player_seat = (player_seat + (round_info.kyoku % 4)) % 4
 
-    payoff_matrix = [int(request.args[name + '_place_bonus']) for name in PLACEMENT_NAMES]
-
-    calculator = Calculator_PlacementEv(
-        payoff_matrix,
-        use_uma=request.args['bonus_type'] == 'uma_bonus',
-    )
-
+    calculator = get_ev_calculator(request)
     calculator.refresh(round_info)
+
     placement_ev = calculator.calc_placement_ev(new_player_seat)
 
     formatted_matrix = list(
@@ -256,7 +290,7 @@ def placement_ev():
         'placement_ev.html',
         kyoku=format_kyoku(round_info.kyoku),
         scores=get_base_scores_from_request(request),
-        payoff=payoff_matrix,
+        payoff=calculator.payoff_matrix,
         player_index=player_seat,
         ev=f"{placement_ev:.4f}",
         matrix=final_matrix,
